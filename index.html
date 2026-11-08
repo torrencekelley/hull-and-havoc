@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="color-scheme" content="light dark" />
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
-    <title>Hull &amp; Havoc v1.100 — a Detroit-style starship tycoon</title>
+    <title>Hull &amp; Havoc v1.101 — a Detroit-style starship tycoon</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -234,7 +234,7 @@
   <body>
     <div class="hud" id="hud"></div>
     <div class="flash" id="flash" role="status"></div>
-    <p class="ver-note"><strong>VERSION 1.100</strong> &nbsp;·&nbsp; A starship tycoon modelled on <strong>Detroit</strong>, the classic automobile-company game: run the firm week by week from your headquarters — design in the Design Office, build on crewed assembly lines, sell through dealerships you plant across the galaxy, hire your department heads, and research the next era's technology before your rivals do. Every ship design still carries the house version system: born <strong>v1.100</strong>, +0.001 at every re-save under the same name.</p>
+    <p class="ver-note"><strong>VERSION 1.101</strong> &nbsp;·&nbsp; A starship tycoon modelled on <strong>Detroit</strong>, the classic automobile-company game: run the firm week by week from your headquarters — design in the Design Office, build on crewed assembly lines, sell through dealerships you plant across the galaxy, hire your department heads, and research the next era's technology before your rivals do. Every ship design still carries the house version system: born <strong>v1.101</strong>, +0.001 at every re-save under the same name.</p>
 
     <nav class="deptnav" id="deptNav" aria-label="Headquarters departments"></nav>
 
@@ -287,7 +287,7 @@
     <!-- DESIGN OFFICE -->
     <main class="layout" id="view-design">
       <section class="panel span-2">
-        <h2>Design Office <span class="tag">slipway preview · versions from v1.100</span></h2>
+        <h2>Design Office <span class="tag">slipway preview · versions from v1.101</span></h2>
         <div class="flash flash-local" role="status"></div>
         <div class="shipstage">
           <div id="shipSvg"></div>
@@ -311,7 +311,7 @@
         </div>
       </section>
       <section class="panel">
-        <h2>Blueprints <span class="tag">every line starts at v1.100</span></h2>
+        <h2>Blueprints <span class="tag">every line starts at v1.101</span></h2>
         <div class="blueprints" id="blueprints"></div>
       </section>
     </main>
@@ -422,10 +422,11 @@
     <script>
     "use strict";
 /* ================= VERSION =================
-   Version naming for this remodel starts at 1.100 — and every new design
-   line is born at the game's version. Stored as integer thousandths:
-   1100 = v1.100, 1101 = v1.101. */
-var GAME_VERSION = 1100;
+   Version naming for this remodel started at 1.100 and ticks up in the
+   last place with every fix or addition — now at 1.101 — and every new
+   design line is born at the game's version. Stored as integer
+   thousandths: 1100 = v1.100, 1101 = v1.101. */
+var GAME_VERSION = 1101;
 function fmtVer(v) { return "v" + ((v == null ? 1000 : v) / 1000).toFixed(3); }
 function designLabel(d) { return (d.name || "Unnamed design") + " " + fmtVer(d.ver); }
 function nextVerFor(name) {
