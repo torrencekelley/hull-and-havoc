@@ -6,6 +6,14 @@ Built Nov 8, 2026 from the v1.100 (Detroit remodel) artifact export
 it by `~/workspace/games/hull-and-havoc/build_phone.py`. Same setup as the
 Argus Zero phone build.
 
+**Release 2 — Nov 8, 2026:** rebuilt from the feedback-fix export (in-game
+version still v1.100; no balance/content changes). Action results and
+refusals (`flash()` messages) now also appear in a `.flash-local` strip
+inside the active department panel, not only at the top of the page — so a
+build refusal is visible beside the Lay Keel button that produced it.
+`HH_CACHE` bumped to `hull-and-havoc-v2`. The previous master is kept at
+`../master-v1100-prefeedbackfix.html`.
+
 ## Files
 - `index.html` — the full game (v1.100) as a standalone page, plus a small
   persistence controller the builder appends. Saves via `localStorage`
@@ -33,16 +41,17 @@ repaints through `render()`. The appended controller:
 The game's own version system is untouched: `GAME_VERSION` still displays
 v1.100 and blueprint versions still bump by thousandths.
 
-## One fix the phone copy carries (game code otherwise identical)
-In the exported v1.100 script, the top-level boot
-(`newGame(); wireDesigner(); render();`) runs *before* two data tables that
-live in the feature-systems section below it — `RIVAL_MODELS` (used inside
-`newGame`) and `LOAN_OFFERS` (used inside `render`). Run strictly, the page
-throws on the undefined tables and never starts. `build_phone.py`
-relocates those two assignments — byte-identical pure data literals — to
-just above the boot call, in this copy only. **The artifact should get the
-same fix via `artifact.edit`** so future exports are clean; after that,
-rebuild here and this section can come out.
+## Boot order (resolved — no phone-only game-code fix anymore)
+In the originally exported v1.100 script, the top-level boot
+(`newGame(); wireDesigner(); render();`) ran *before* two data tables in
+the feature-systems section below it — `RIVAL_MODELS` (used inside
+`newGame`) and `LOAN_OFFERS` (used inside `render`) — and a strict run
+threw on the undefined tables. The first phone build relocated them. The
+artifact source has since been fixed: current exports define both tables
+immediately above the boot call, so the phone copy's game code is now
+byte-identical to the master. `build_phone.py` keeps the relocation only
+as a guard — it fires solely if a table is ever found after the boot call
+again, and reports when it does.
 
 ## Rebuild after a new game export
 1. Re-export the artifact and replace `../master.html` with the new export.
@@ -60,13 +69,14 @@ rebuild here and this section can come out.
    own localStorage; nothing is shared or synced).
 3. iPhone: open in Safari → Share → "Add to Home Screen".
 
-## Hosting — remaining step (not yet done)
-Mirror the Argus Zero setup: create the repo
-**github.com/torrencekelley/hull-and-havoc**, push the contents of this
-`phone/` folder to it, and enable GitHub Pages on the repo, giving
-**https://torrencekelley.github.io/hull-and-havoc/**. That URL is the link
-to install from and to share with Brent. As of this build, `gh` is not
-logged in on the build VM, so the repo creation/push is still outstanding.
+## Hosting
+Live since Nov 8, 2026, mirroring the Argus Zero setup: repo
+**github.com/torrencekelley/hull-and-havoc** with GitHub Pages enabled,
+serving **https://torrencekelley.github.io/hull-and-havoc/** — the link to
+install from and to share with Brent. To ship an update, push the changed
+files from this `phone/` folder to the repo root (for the feedback-fix
+release: `index.html` and `sw.js`) and bump `HH_CACHE` so installed phones
+drop the old build.
 
 ## Test-drive without hosting
 Open `index.html` directly in the phone's browser. It plays fully;

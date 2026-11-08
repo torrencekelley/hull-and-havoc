@@ -63,6 +63,8 @@
       .endweek:active { transform: translateY(1px); }
       .flash { min-height: 22px; padding: 4px 14px; font-weight: 600; color: var(--teal); max-width: 1560px; margin: 0 auto; }
       .flash.warn { color: var(--red); }
+      .flash-local { min-height: 0; max-width: none; margin: 0 0 8px; padding: 6px 10px; background: var(--panel2); border-radius: 8px; }
+      .flash-local:empty { display: none; }
 
       /* ---------- Department nav (the Detroit HQ) ---------- */
       .deptnav {
@@ -263,14 +265,17 @@
     <main class="layout active" id="view-board">
       <section class="panel span-2">
         <h2>Boardroom — Corvane Consolidated Yards <span class="tag" id="boardTag"></span></h2>
+        <div class="flash flash-local" role="status"></div>
         <div id="boardMain"></div>
       </section>
       <section class="panel">
         <h2>Rivals &amp; Market Share</h2>
+        <div class="flash flash-local" role="status"></div>
         <div id="rivals"></div>
       </section>
       <section class="panel">
         <h2>Office — Loan Desk <span class="tag">financing</span></h2>
+        <div class="flash flash-local" role="status"></div>
         <div id="loanDesk"></div>
       </section>
       <section class="panel span-all">
@@ -283,6 +288,7 @@
     <main class="layout" id="view-design">
       <section class="panel span-2">
         <h2>Design Office <span class="tag">slipway preview · versions from v1.100</span></h2>
+        <div class="flash flash-local" role="status"></div>
         <div class="shipstage">
           <div id="shipSvg"></div>
           <div class="shipname-line" id="shipClassLine"></div>
@@ -314,6 +320,7 @@
     <main class="layout" id="view-factory">
       <section class="panel span-all">
         <h2>Assembly — Shipyards &amp; Lines <span class="tag" id="yardTag"></span></h2>
+        <div class="flash flash-local" role="status"></div>
         <div id="yards"></div>
       </section>
     </main>
@@ -322,6 +329,7 @@
     <main class="layout" id="view-sales">
       <section class="panel">
         <h2>Territories — Galaxy Map <span class="tag" id="mapTag"></span></h2>
+        <div class="flash flash-local" role="status"></div>
         <div class="map" id="map"></div>
         <div class="legend">
           <span><span class="badge war">War</span> warships wanted, runs are risky</span>
@@ -334,12 +342,14 @@
       </section>
       <section class="panel">
         <h2>Distribution <span class="tag">stock, showrooms &amp; convoys</span></h2>
+        <div class="flash flash-local" role="status"></div>
         <div id="stock"></div>
         <h3>In Transit</h3>
         <div id="transit"></div>
       </section>
       <section class="panel">
         <h2>Fleet Contracts <span class="tag">premium buyers</span></h2>
+        <div class="flash flash-local" role="status"></div>
         <div id="contracts"></div>
       </section>
     </main>
@@ -348,6 +358,7 @@
     <main class="layout" id="view-personnel">
       <section class="panel span-2">
         <h2>Personnel Office <span class="tag">department heads</span></h2>
+        <div class="flash flash-local" role="status"></div>
         <div id="managers"></div>
         <h3>Applicants</h3>
         <div id="applicants"></div>
@@ -373,6 +384,7 @@
     <main class="layout" id="view-research">
       <section class="panel span-all">
         <h2>Research Lab <span class="tag" id="resTag"></span></h2>
+        <div class="flash flash-local" role="status"></div>
         <div id="researchHead"></div>
         <div class="techgrid" id="techGrid" style="margin-top:10px"></div>
       </section>
@@ -551,7 +563,18 @@ function stars(n) { var s = ""; for (var i = 0; i < 5; i++) s += i < n ? "★" :
 function sectorById(id) { return S.sectors[id]; }
 function dist(a, b) { return Math.abs(a.gx - b.gx) + Math.abs(a.gy - b.gy); }
 function transitWeeks(a, b) { return Math.max(1, Math.ceil(dist(a, b) / 2)) + ((typeof S !== "undefined" && S && S.embargoUntil && S.turn < S.embargoUntil) ? 1 : 0); }
-function flash(msg, warn) { var f = $("flash"); f.textContent = msg; f.className = "flash" + (warn ? " warn" : ""); }
+function flash(msg, warn) {
+  var cls = "flash" + (warn ? " warn" : "");
+  var f = $("flash"); f.textContent = msg; f.className = cls;
+  /* Mirror the message into the active department's own feedback strip(s),
+     right beside the buttons that produced it — the top-of-page flash alone
+     sits far above the working section on a phone screen, where a refusal
+     ("Not enough resources…") is easy to miss and the button looks dead. */
+  if (typeof ui !== "undefined" && ui && ui.view) {
+    var locals = document.querySelectorAll("#view-" + ui.view + " .flash-local");
+    Array.prototype.forEach.call(locals, function (el) { el.textContent = msg; el.className = "flash flash-local" + (warn ? " warn" : ""); });
+  }
+}
 function logNews(text) { S.news.unshift({ turn: S.turn, text: text }); if (S.news.length > 40) S.news.length = 40; }
 /* ================= DESIGN MATH ================= */
 function designStats(d) {
