@@ -1,11 +1,28 @@
 # Hull & Havoc — phone build (PWA)
 
-Built Nov 8, 2026 from the v1.101 artifact export (slug
-`starship-manufacturing-game`; v1.100 was the Detroit remodel). The master
+Built Nov 8, 2026 from the v1.200 artifact export (slug
+`starship-manufacturing-game`; v1.100 was the Detroit remodel, v1.101 the
+numbering-law tick). The master
 export is kept verbatim at `~/workspace/games/hull-and-havoc/master.html`;
 this folder is generated from it by
 `~/workspace/games/hull-and-havoc/build_phone.py`. Same setup as the Argus
 Zero phone build.
+
+**Release 4 — Nov 8, 2026:** rebuilt from the game v1.200 export — a
+feature wave (`GAME_VERSION` 1101 → 1200; all version displays read
+v1.200 and newly saved ship designs are born at v1.200; existing design
+versions are untouched). New in v1.200: **decision events** — choices with
+ledger consequences instead of pure weather; **sector relationships &
+tastes** — buyers remember deliveries and misses and their tastes shift
+over time; a **Boardroom trophy cabinet** with eight scenario ambitions
+to chase; a **self-explaining Weekly Report** whose "why" section gives
+variance analysis from the week's real numbers; **named staff** — a Chief
+Engineer plus a named foreman at every yard, with skill, salary, and
+morale, and rivals who may try to poach them; and **upgraded ship art** —
+richer SVG renders (gradients, decals, canopy, per-part silhouettes) so a
+ship's parts read at a glance. The Release 2 feedback strips are
+included. `HH_CACHE` bumped to `hull-and-havoc-v4`. The previous master
+is kept at `../master-v1101.html`.
 
 **Release 3 — Nov 8, 2026:** rebuilt from the game version-bump export.
 The in-game version counter moved **v1.100 → v1.101** (`GAME_VERSION`
@@ -25,7 +42,7 @@ build refusal is visible beside the Lay Keel button that produced it.
 `../master-v1100-prefeedbackfix.html`.
 
 ## Files
-- `index.html` — the full game (v1.101) as a standalone page, plus a small
+- `index.html` — the full game (v1.200) as a standalone page, plus a small
   persistence controller the builder appends. Saves via `localStorage`
   (key `hull-and-havoc-save-v1`, save field `ver:1`).
 - `manifest.webmanifest` — install metadata (name "Hull & Havoc", dark
@@ -49,7 +66,7 @@ repaints through `render()`. The appended controller:
 - the in-game **Restart** button (`newGame()` + `render()`) overwrites the
   stored save with the new company, exactly as expected.
 The game's own version system is untouched by the phone build:
-`GAME_VERSION` displays v1.101 and blueprint versions still bump by
+`GAME_VERSION` displays v1.200 and blueprint versions still bump by
 thousandths.
 
 ## Boot order (resolved — no phone-only game-code fix anymore)
