@@ -1,0 +1,2141 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+    <title>Hull &amp; Havoc v1.100 — a Detroit-style starship tycoon</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #070b14; --bg2: #0b1120; --panel: #101828; --panel2: #0d1524;
+        --line: #26334d; --ink: #e8eef7; --muted: #93a5c0; --accent: #ffb340;
+        --accent-ink: #1a1206; --teal: #3fd0c9; --red: #ff5d5d; --green: #5fd68a;
+        --amber: #ffc95e; --chip: #16213a; --input: #0a1220; --shadow: rgba(0,0,0,.45);
+      }
+      @media (prefers-color-scheme: light) {
+        :root {
+          --bg: #dfe7f2; --bg2: #cfdbee; --panel: #f4f7fc; --panel2: #e9eff8;
+          --line: #b3c2da; --ink: #16233a; --muted: #54678a; --accent: #b96f00;
+          --accent-ink: #fff8ec; --teal: #0e7d78; --red: #c22f2f; --green: #1e7d46;
+          --amber: #9a6b00; --chip: #e2eaf6; --input: #ffffff; --shadow: rgba(30,50,90,.18);
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body {
+        background:
+          radial-gradient(1px 1px at 12% 22%, rgba(255,255,255,.55) 50%, transparent 51%),
+          radial-gradient(1px 1px at 68% 8%, rgba(255,255,255,.4) 50%, transparent 51%),
+          radial-gradient(1.5px 1.5px at 84% 34%, rgba(255,255,255,.35) 50%, transparent 51%),
+          radial-gradient(1px 1px at 33% 64%, rgba(255,255,255,.3) 50%, transparent 51%),
+          radial-gradient(1px 1px at 52% 88%, rgba(255,255,255,.35) 50%, transparent 51%),
+          linear-gradient(180deg, var(--bg), var(--bg2));
+        background-attachment: fixed; color: var(--ink);
+        font-family: "Rajdhani", system-ui, sans-serif; font-size: 17px; line-height: 1.4; min-height: 100vh;
+      }
+      @media (prefers-color-scheme: light) { body { background: linear-gradient(180deg, var(--bg), var(--bg2)); } }
+      button, select, input { font: inherit; }
+      button { cursor: pointer; }
+      button:disabled { opacity: .45; cursor: not-allowed; }
+
+      /* ---------- HUD ---------- */
+      .hud {
+        position: sticky; top: 0; z-index: 40;
+        display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px;
+        padding: 10px 14px; background: color-mix(in srgb, var(--panel) 92%, transparent);
+        backdrop-filter: blur(6px); border-bottom: 2px solid var(--accent);
+      }
+      .hud .brand { font-family: "Orbitron", sans-serif; font-weight: 900; letter-spacing: .06em; font-size: 15px; text-transform: uppercase; color: var(--accent); }
+      .ver-badge { font-family: "Orbitron", sans-serif; font-weight: 700; font-size: 11px; letter-spacing: .08em; background: var(--accent); color: var(--accent-ink); border-radius: 20px; padding: 2px 8px; white-space: nowrap; }
+      .ver-chip { display: inline-block; font-family: "Orbitron", sans-serif; font-size: 11px; font-weight: 700; letter-spacing: .05em; background: color-mix(in srgb, var(--accent) 18%, transparent); color: var(--accent); border: 1px solid var(--accent); border-radius: 20px; padding: 1px 7px; white-space: nowrap; vertical-align: middle; }
+      .ver-note { max-width: 1560px; margin: 0 auto; padding: 10px 14px 0; font-size: 13.5px; font-weight: 600; color: var(--muted); }
+      .ver-note strong { color: var(--accent); font-family: "Orbitron", sans-serif; font-size: 12px; letter-spacing: .06em; }
+      .hud .week { font-family: "Orbitron", sans-serif; font-weight: 700; font-size: 15px; background: var(--chip); border: 1px solid var(--line); border-radius: 6px; padding: 4px 10px; }
+      .res { display: inline-flex; align-items: baseline; gap: 5px; background: var(--chip); border: 1px solid var(--line); border-radius: 6px; padding: 4px 10px; font-weight: 600; }
+      .res small { color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; font-size: 11px; }
+      .res.neg { color: var(--red); border-color: var(--red); }
+      .hud .spacer { flex: 1; }
+      .endweek { font-family: "Orbitron", sans-serif; font-weight: 700; letter-spacing: .04em; background: var(--accent); color: var(--accent-ink); border: none; border-radius: 8px; padding: 10px 18px; font-size: 15px; box-shadow: 0 2px 10px var(--shadow); }
+      .endweek:active { transform: translateY(1px); }
+      .flash { min-height: 22px; padding: 4px 14px; font-weight: 600; color: var(--teal); max-width: 1560px; margin: 0 auto; }
+      .flash.warn { color: var(--red); }
+
+      /* ---------- Department nav (the Detroit HQ) ---------- */
+      .deptnav {
+        max-width: 1560px; margin: 2px auto 0; padding: 6px 14px 0;
+        display: flex; flex-wrap: wrap; gap: 8px;
+      }
+      .deptnav button {
+        font-family: "Orbitron", sans-serif; font-size: 12.5px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
+        background: var(--panel); color: var(--muted); border: 1px solid var(--line); border-bottom: none;
+        border-radius: 9px 9px 0 0; padding: 10px 14px 12px;
+      }
+      .deptnav button:hover { color: var(--ink); }
+      .deptnav button.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+      .deptnav button .cnt { font-family: "Rajdhani", sans-serif; letter-spacing: 0; text-transform: none; font-weight: 700; opacity: .75; }
+
+      /* ---------- Layout ---------- */
+      .layout { display: none; gap: 14px; padding: 12px 14px 30px; grid-template-columns: 1fr; max-width: 1560px; margin: 0 auto; }
+      .layout.active { display: grid; }
+      @media (min-width: 1080px) {
+        .layout { grid-template-columns: 1.25fr 1fr 1.15fr; align-items: start; }
+        .span-all { grid-column: 1 / -1; }
+        .span-2 { grid-column: span 2; }
+      }
+      .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; box-shadow: 0 3px 14px var(--shadow); }
+      .panel h2 { font-family: "Orbitron", sans-serif; font-size: 14px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; margin: 0 0 10px; color: var(--ink); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .panel h2 .tag { margin-left: auto; font-family: "Rajdhani", sans-serif; letter-spacing: 0; text-transform: none; color: var(--muted); font-size: 13px; font-weight: 600; }
+      .panel h3 { margin: 14px 0 6px; font-size: 15px; letter-spacing: .03em; }
+      .muted { color: var(--muted); }
+      .small { font-size: 14px; }
+      details.help { max-width: 1560px; margin-inline: auto; padding: 8px 14px 0; }
+      details.help summary { cursor: pointer; font-weight: 700; color: var(--accent); }
+      details.help .body { background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; margin-top: 8px; }
+      details.help li { margin: 3px 0; }
+
+      /* ---------- Boardroom ---------- */
+      .era { border: 1px solid var(--accent); border-radius: 8px; padding: 10px 12px; background: color-mix(in srgb, var(--accent) 8%, var(--panel2)); margin-bottom: 12px; }
+      .era .era-name { font-family: "Orbitron", sans-serif; font-weight: 900; letter-spacing: .05em; font-size: 17px; }
+      .headline { font-size: 19px; font-weight: 700; line-height: 1.3; border-top: 2px solid var(--ink); border-bottom: 1px solid var(--line); padding: 8px 2px; margin: 10px 0; }
+      .headline small { display: block; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+      table.report { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+      table.report th { text-align: left; color: var(--muted); font-size: 12px; letter-spacing: .07em; text-transform: uppercase; padding: 4px 6px; border-bottom: 1px solid var(--line); }
+      table.report td { padding: 5px 6px; border-bottom: 1px solid var(--line); font-weight: 600; }
+      table.report td.num, table.report th.num { text-align: right; }
+      table.report tr:last-child td { border-bottom: none; }
+      .sharebar { display: grid; grid-template-columns: 150px 1fr 52px; gap: 8px; align-items: center; margin: 5px 0; font-weight: 700; font-size: 14px; }
+      .sharebar .track { height: 12px; background: var(--chip); border: 1px solid var(--line); border-radius: 5px; overflow: hidden; }
+      .sharebar .track i { display: block; height: 100%; background: var(--teal); }
+      .sharebar.you .track i { background: var(--accent); }
+      .goalbar { height: 12px; background: var(--chip); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; margin-top: 4px; }
+      .goalbar i { display: block; height: 100%; background: var(--green); }
+
+      /* ---------- Galaxy map ---------- */
+      .map { position: relative; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: #04070e; }
+      .galaxy { display: block; width: 100%; height: auto; }
+      .gnode { cursor: pointer; }
+      .gnode .halo, .gnode .ring { transition: opacity .18s ease; }
+      .gnode:hover .halo { opacity: .6 !important; }
+      .gnode:focus { outline: none; }
+      .gnode:focus .ring { opacity: 1 !important; stroke: #ffffff; }
+      .glabel { font-family: "Rajdhani", sans-serif; font-weight: 700; fill: #eef3fb; paint-order: stroke; stroke: rgba(3,6,12,.85); stroke-width: 3px; stroke-linejoin: round; }
+      .gsub { font-family: "Rajdhani", sans-serif; font-weight: 700; letter-spacing: .14em; fill: #7df0e8; paint-order: stroke; stroke: rgba(3,6,12,.85); stroke-width: 3px; stroke-linejoin: round; }
+      .gfac { font-family: "Rajdhani", sans-serif; font-weight: 600; fill: #9db1cf; paint-order: stroke; stroke: rgba(3,6,12,.85); stroke-width: 3px; stroke-linejoin: round; }
+      @keyframes haloPulse { 0%,100% { opacity: .3; } 50% { opacity: .65; } }
+      .halo-war { animation: haloPulse 2.2s ease-in-out infinite; }
+      @media (prefers-reduced-motion: reduce) { .halo-war { animation: none; } }
+      .badge { display: inline-block; font-size: 10.5px; font-weight: 700; letter-spacing: .08em; padding: 1px 6px; border-radius: 20px; text-transform: uppercase; align-self: flex-start; }
+      .badge.war { background: color-mix(in srgb, var(--red) 22%, transparent); color: var(--red); border: 1px solid var(--red); }
+      .badge.tension { background: color-mix(in srgb, var(--amber) 20%, transparent); color: var(--amber); border: 1px solid var(--amber); }
+      .badge.peace { background: color-mix(in srgb, var(--green) 18%, transparent); color: var(--green); border: 1px solid var(--green); }
+      .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 10px; font-size: 13px; color: var(--muted); font-weight: 600; }
+      .sector-detail { margin-top: 12px; border-top: 1px dashed var(--line); padding-top: 12px; }
+      .sector-detail h3 { margin: 0 0 2px; font-size: 19px; font-family: "Orbitron", sans-serif; letter-spacing: .03em; }
+      .kv { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; font-size: 15px; margin: 8px 0; }
+      .kv dt { color: var(--muted); font-weight: 600; }
+      .kv dd { margin: 0; font-weight: 600; }
+      .demandbar { display: block; flex: 1 1 auto; height: 8px; border-radius: 4px; background: var(--chip); border: 1px solid var(--line); overflow: hidden; }
+      .demandbar i { display: block; height: 100%; }
+      .demandcell { display: flex; align-items: center; gap: 8px; }
+      .demandcell .dval { flex: 0 0 auto; min-width: 26px; }
+      .btnrow { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; align-items: center; }
+      .btn { background: var(--chip); color: var(--ink); border: 1px solid var(--line); border-radius: 7px; padding: 7px 12px; font-weight: 700; font-size: 14.5px; }
+      .btn:hover:not(:disabled) { border-color: var(--accent); }
+      .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+      .btn.danger { border-color: var(--red); color: var(--red); }
+
+      /* ---------- Designer ---------- */
+      .shipstage { background: radial-gradient(ellipse at 50% 60%, color-mix(in srgb, var(--teal) 10%, transparent), transparent 70%), var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 6px 4px 0; text-align: center; }
+      .shipstage svg { width: 100%; height: auto; max-height: 190px; }
+      .shipname-line { font-family: "Orbitron", sans-serif; font-weight: 700; font-size: 15px; padding: 4px 0 8px; letter-spacing: .04em; }
+      .formgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 12px; }
+      .formgrid label { display: block; font-size: 12.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-bottom: 3px; }
+      select, input[type="text"], input[type="number"] { width: 100%; background: var(--input); color: var(--ink); border: 1px solid var(--line); border-radius: 7px; padding: 8px 9px; font-weight: 600; }
+      input[type="range"] { width: 100%; accent-color: var(--accent); }
+      .statrows { margin-top: 12px; display: grid; gap: 6px; }
+      .statrow { display: grid; grid-template-columns: 86px 1fr 46px; align-items: center; gap: 8px; font-weight: 700; font-size: 14px; }
+      .statrow > span:last-child { white-space: nowrap; text-align: right; }
+      .statrow .bar { height: 9px; background: var(--chip); border: 1px solid var(--line); border-radius: 5px; overflow: hidden; }
+      .statrow .bar i { display: block; height: 100%; background: var(--teal); }
+      .statrow .bar i.fire { background: var(--red); }
+      .statrow .bar i.cargo { background: var(--amber); }
+      .costline { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 12px; font-weight: 700; background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+      .costline .over { color: var(--red); }
+      .costline .good { color: var(--green); }
+      .pricebox { margin-top: 12px; border: 1px solid var(--accent); border-radius: 8px; padding: 10px 12px; background: color-mix(in srgb, var(--accent) 6%, var(--panel2)); }
+      .pricebox .prow { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; font-weight: 700; }
+      .testbox { margin-top: 12px; border: 1px dashed var(--line); border-radius: 8px; padding: 10px 12px; background: var(--panel2); }
+      .testbox .quote { font-style: italic; font-weight: 600; }
+      .blueprints { margin-top: 14px; display: grid; gap: 8px; }
+      .bp { border: 1px solid var(--line); border-radius: 8px; padding: 9px 11px; background: var(--panel2); display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+      .bp .nm { font-weight: 700; font-size: 16px; }
+      .bp .spec { color: var(--muted); font-weight: 600; font-size: 13.5px; }
+      .bp .acts { margin-left: auto; display: flex; gap: 6px; }
+      .mini { font-size: 13px; padding: 4px 9px; }
+
+      /* ---------- Facilities / ops / people / research ---------- */
+      .yard { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; background: var(--panel2); }
+      .yard header { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+      .yard header .nm { font-weight: 700; font-size: 16.5px; }
+      .yard header .loc { color: var(--muted); font-weight: 600; font-size: 14px; }
+      .crewrow { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; margin-top: 8px; border-top: 1px dashed var(--line); padding-top: 8px; }
+      .crewrow select { width: auto; }
+      .slot { margin-top: 8px; border-top: 1px dashed var(--line); padding-top: 8px; }
+      .prog { height: 10px; border-radius: 5px; background: var(--chip); border: 1px solid var(--line); overflow: hidden; margin-top: 4px; }
+      .prog i { display: block; height: 100%; background: var(--accent); }
+      .slot .row { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; }
+      .slot select { width: auto; flex: 1; min-width: 140px; }
+      .pill { display: inline-block; font-size: 12px; font-weight: 700; padding: 1px 8px; border-radius: 20px; border: 1px solid var(--line); background: var(--chip); }
+      .pill.war { color: var(--red); border-color: var(--red); }
+      .pill.free { color: var(--teal); border-color: var(--teal); }
+      .shipitem, .contract, .person, .tech { border: 1px solid var(--line); border-radius: 8px; padding: 9px 11px; margin-bottom: 9px; background: var(--panel2); }
+      .shipitem .row, .contract .row, .person .row, .tech .row { display: flex; flex-wrap: wrap; gap: 5px 10px; align-items: center; }
+      .shipitem select { width: auto; flex: 1; min-width: 130px; }
+      .person .acts, .tech .acts { margin-left: auto; display: flex; gap: 6px; }
+      .stars { color: var(--accent); letter-spacing: 1px; font-weight: 700; }
+      .techgrid { display: grid; gap: 9px; }
+      @media (min-width: 900px) { .techgrid { grid-template-columns: 1fr 1fr; } }
+      .empty { border: 1px dashed var(--line); border-radius: 8px; padding: 12px; color: var(--muted); font-weight: 600; text-align: center; }
+      .newslog { list-style: none; margin: 0; padding: 0; max-height: 340px; overflow-y: auto; }
+      .newslog li { padding: 6px 2px; border-bottom: 1px solid var(--line); font-size: 14.5px; }
+      .newslog li:last-child { border-bottom: none; }
+      .newslog .wk { font-weight: 700; color: var(--accent); margin-right: 6px; white-space: nowrap; }
+      .market { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; }
+      .market .mkt { display: inline-flex; gap: 8px; align-items: center; font-weight: 700; }
+
+      /* ---------- Modal ---------- */
+      .backdrop { position: fixed; inset: 0; background: rgba(2,6,14,.72); z-index: 80; display: none; align-items: center; justify-content: center; padding: 16px; }
+      .backdrop.open { display: flex; }
+      .modal { background: var(--panel); color: var(--ink); border: 1px solid var(--accent); border-radius: 12px; max-width: 620px; width: 100%; max-height: 88vh; overflow-y: auto; padding: 20px 22px; box-shadow: 0 12px 44px rgba(0,0,0,.6); }
+      .modal h2 { font-family: "Orbitron", sans-serif; margin: 0 0 4px; font-size: 19px; letter-spacing: .04em; }
+      .modal ul { margin: 10px 0; padding-left: 20px; }
+      .modal li { margin: 4px 0; }
+      .modal .totals { background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-weight: 700; }
+      .modal .btnrow { justify-content: flex-end; }
+      @media (max-width: 560px) {
+        body { font-size: 16px; }
+        .sharebar { grid-template-columns: 110px 1fr 46px; }
+        .deptnav button { padding: 8px 10px 10px; font-size: 11px; }
+      }
+    </style>
+  <meta name="theme-color" content="#070b14">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+  <body>
+    <div class="hud" id="hud"></div>
+    <div class="flash" id="flash" role="status"></div>
+    <p class="ver-note"><strong>VERSION 1.100</strong> &nbsp;·&nbsp; A starship tycoon modelled on <strong>Detroit</strong>, the classic automobile-company game: run the firm week by week from your headquarters — design in the Design Office, build on crewed assembly lines, sell through dealerships you plant across the galaxy, hire your department heads, and research the next era's technology before your rivals do. Every ship design still carries the house version system: born <strong>v1.100</strong>, +0.001 at every re-save under the same name.</p>
+
+    <nav class="deptnav" id="deptNav" aria-label="Headquarters departments"></nav>
+
+    <details class="help">
+      <summary>How to play — the Detroit loop, in space</summary>
+      <div class="body">
+        <ul>
+          <li><strong>One week per turn.</strong> Your charter runs <strong>2708–2728</strong>. Each <em>End Week</em>, the week closes: lines build, convoys land, dealerships sell, wages and bills go out, rivals report, and you get the <strong>Weekly Report</strong> — sales by model, expenses, market share, and the newspaper headline.</li>
+          <li><strong>Design Office:</strong> pick size, hull, engines, weapons — then <strong>set your own asking price</strong>, like Detroit. Price against build cost and market value: greedy prices sit unsold, sharp prices fly off the showroom floor. <strong>Test-fly</strong> a design (₡150) and the trade press will rate it; a good review raises its appeal — re-save to lock the tested spec in as a new version.</li>
+          <li><strong>Assembly:</strong> each yard runs assembly lines tooled for one size class. <strong>Crew size and wages are yours to set</strong> — bigger crews build faster, better-paid crews turn out higher-quality ships that sell for more, and every crew is a weekly wage bill.</li>
+          <li><strong>Sales &amp; Marketing:</strong> ships don't sell themselves. Open <strong>dealerships</strong> in sectors, stock them by shipping finished ships there, and set a <strong>weekly advertising budget per sector</strong>. Dealerships sell from stock every week at your asking price; no dealership means only passing brokers, at a trickle. A broker will always take a ship off your hands instantly — at 85% of asking.</li>
+          <li><strong>Personnel:</strong> hire department heads — Chief Designer, Yard Foreman, Sales Director, Research Lead. Skill is rated in stars and paid weekly. Good people quietly bend every number in the firm your way.</li>
+          <li><strong>Research:</strong> the galaxy's technology marches on by year, Detroit-style. Fund the lab weekly to earn research points, then unlock hulls, drives, and weapons as their era arrives — a heavy lance battery in 2708 is science fiction; by 2713 it's a product line.</li>
+          <li><strong>Rivals:</strong> Vossk Combine Yards, the Imperium State Arsenals, and Meridian Starworks sell against you every week. The Boardroom tracks market share — take theirs.</li>
+          <li><strong>Contracts</strong> remain the fast money: fleet buyers post orders with deadlines, paid at a premium on delivery.</li>
+          <li><strong>The Galactic Expo:</strong> every 52 weeks the year's designs — yours and the rivals' — are judged for Best Warship, Best Freighter, and Best Value. Trophies raise your <strong>reputation</strong>, and reputation moves the prices buyers will accept.</li>
+          <li><strong>Scout reports:</strong> in the Boardroom, pay ₡400 to lift a rival's current spec sheet — what they're building and what they're charging — for 26 weeks. Price with your eyes open.</li>
+          <li><strong>Patents:</strong> the first firm to finish a tech patents it. Your patents pay ₡9/week each in rival licensing fees; a tech a rival patented first costs you +50% RP to work around. The tree is a race.</li>
+          <li><strong>Refits:</strong> any ship in stock can be refitted with researched engines and weapons for 40% of the new build cost — the refit bumps the ship to a new version and keeps early hulls earning in later eras (and gives frontier buyers an affordable upgrade path).</li>
+          <li><strong>The Loan Desk:</strong> in the Boardroom's Office panel, borrow to expand — payments and their interest portion are itemised in the Weekly Report, with the balance and schedule always visible.</li>
+          <li><strong>The timeline:</strong> history has a shape. The Boardroom lists the named eras ahead — the Founding War, the Long Quiet (two years when only cheap hulls sell), the Ember Embargo — so you can stock, price, and research around what's coming. Random wars and surges still happen on top.</li>
+          <li><strong>Goal:</strong> grow net worth to <strong>₡60,000</strong> before the charter review in 2728. If credits fall below −₡1,000, the creditors take the yards.</li>
+        </ul>
+      </div>
+    </details>
+
+    <!-- BOARDROOM -->
+    <main class="layout active" id="view-board">
+      <section class="panel span-2">
+        <h2>Boardroom — Corvane Consolidated Yards <span class="tag" id="boardTag"></span></h2>
+        <div id="boardMain"></div>
+      </section>
+      <section class="panel">
+        <h2>Rivals &amp; Market Share</h2>
+        <div id="rivals"></div>
+      </section>
+      <section class="panel">
+        <h2>Office — Loan Desk <span class="tag">financing</span></h2>
+        <div id="loanDesk"></div>
+      </section>
+      <section class="panel span-all">
+        <h2>Galactic News Wire <span class="tag">the week's record</span></h2>
+        <ul class="newslog" id="newsLog"></ul>
+      </section>
+    </main>
+
+    <!-- DESIGN OFFICE -->
+    <main class="layout" id="view-design">
+      <section class="panel span-2">
+        <h2>Design Office <span class="tag">slipway preview · versions from v1.100</span></h2>
+        <div class="shipstage">
+          <div id="shipSvg"></div>
+          <div class="shipname-line" id="shipClassLine"></div>
+        </div>
+        <div class="formgrid">
+          <div><label for="selSize">Size class</label><select id="selSize"></select></div>
+          <div><label for="selHull">Main hull</label><select id="selHull"></select></div>
+          <div><label for="selEngine">Engines</label><select id="selEngine"></select></div>
+          <div><label for="selWeapon">Weapons</label><select id="selWeapon"></select></div>
+          <div style="grid-column: 1 / -1;"><label for="inpDesignName">Design name</label><input type="text" id="inpDesignName" maxlength="28" /></div>
+        </div>
+        <div class="statrows" id="statRows"></div>
+        <div class="costline" id="costLine"></div>
+        <div class="pricebox" id="priceBox"></div>
+        <div class="testbox" id="testBox"></div>
+        <div class="btnrow">
+          <button class="btn primary" id="btnSaveBp">Save as Blueprint</button>
+          <button class="btn" id="btnTest">Test Flight — ₡150</button>
+          <span class="muted small" id="saveVerHint"></span>
+        </div>
+      </section>
+      <section class="panel">
+        <h2>Blueprints <span class="tag">every line starts at v1.100</span></h2>
+        <div class="blueprints" id="blueprints"></div>
+      </section>
+    </main>
+
+    <!-- ASSEMBLY -->
+    <main class="layout" id="view-factory">
+      <section class="panel span-all">
+        <h2>Assembly — Shipyards &amp; Lines <span class="tag" id="yardTag"></span></h2>
+        <div id="yards"></div>
+      </section>
+    </main>
+
+    <!-- SALES & MARKETING -->
+    <main class="layout" id="view-sales">
+      <section class="panel">
+        <h2>Territories — Galaxy Map <span class="tag" id="mapTag"></span></h2>
+        <div class="map" id="map"></div>
+        <div class="legend">
+          <span><span class="badge war">War</span> warships wanted, runs are risky</span>
+          <span><span class="badge tension">Tension</span> prices rising</span>
+          <span><span class="badge peace">Peace</span> steady trade</span>
+        </div>
+        <div class="sector-detail" id="sectorDetail"></div>
+        <h3>Resource Market</h3>
+        <div class="market" id="market"></div>
+      </section>
+      <section class="panel">
+        <h2>Distribution <span class="tag">stock, showrooms &amp; convoys</span></h2>
+        <div id="stock"></div>
+        <h3>In Transit</h3>
+        <div id="transit"></div>
+      </section>
+      <section class="panel">
+        <h2>Fleet Contracts <span class="tag">premium buyers</span></h2>
+        <div id="contracts"></div>
+      </section>
+    </main>
+
+    <!-- PERSONNEL -->
+    <main class="layout" id="view-personnel">
+      <section class="panel span-2">
+        <h2>Personnel Office <span class="tag">department heads</span></h2>
+        <div id="managers"></div>
+        <h3>Applicants</h3>
+        <div id="applicants"></div>
+      </section>
+      <section class="panel">
+        <h2>Crews &amp; Wages</h2>
+        <div class="small">
+          <p>Every yard crew is set on its own card in <strong>Assembly</strong> — headcount and pay grade together decide the yard's character:</p>
+          <ul>
+            <li><strong>Under 30 crew:</strong> lines crawl at 60% pace. Cheap, slow, and it shows.</li>
+            <li><strong>30–70 crew:</strong> standard pace.</li>
+            <li><strong>Over 70 crew:</strong> double-shift pace, 135% — at double-shift wages.</li>
+            <li><strong>Low pay (₡6):</strong> quality 93% — ships sell for less and buyers know why.</li>
+            <li><strong>Standard pay (₡9):</strong> quality 100%.</li>
+            <li><strong>High pay (₡13):</strong> quality 108% — the yard's name goes on every hull, proudly.</li>
+          </ul>
+          <p class="muted">Quality is stamped onto each ship as it rolls off the line and follows it to the showroom. A good Yard Foreman speeds every line and adds a little quality of his own.</p>
+        </div>
+      </section>
+    </main>
+
+    <!-- RESEARCH -->
+    <main class="layout" id="view-research">
+      <section class="panel span-all">
+        <h2>Research Lab <span class="tag" id="resTag"></span></h2>
+        <div id="researchHead"></div>
+        <div class="techgrid" id="techGrid" style="margin-top:10px"></div>
+      </section>
+    </main>
+
+    <!-- MONTHLY REPORT MODAL -->
+    <div class="backdrop" id="ledgerBackdrop">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="ledgerTitle">
+        <h2 id="ledgerTitle">Weekly Report</h2>
+        <div class="muted" id="ledgerSub"></div>
+        <div id="ledgerBody"></div>
+        <div class="totals" id="ledgerTotals"></div>
+        <div class="btnrow"><button class="btn primary" id="btnLedgerClose">Begin the new week</button></div>
+      </div>
+    </div>
+
+    <!-- GAME OVER MODAL -->
+    <div class="backdrop" id="overBackdrop">
+      <div class="modal" role="dialog" aria-modal="true">
+        <h2>The creditors took the yards</h2>
+        <p>Your credit line collapsed and the company's assets were seized. The galaxy's wars will be supplied by someone else.</p>
+        <div class="btnrow"><button class="btn primary" id="btnRestart">Found a new company</button></div>
+      </div>
+    </div>
+
+    <!-- CHARTER MODAL -->
+    <div class="backdrop" id="charterBackdrop">
+      <div class="modal" role="dialog" aria-modal="true">
+        <h2 id="charterTitle">The 2728 Charter Review</h2>
+        <p id="charterBody"></p>
+        <div class="btnrow"><button class="btn primary" id="btnCharterContinue">Keep building — the yards are ours</button></div>
+      </div>
+    </div>
+
+    <script>
+    "use strict";
+/* ================= VERSION =================
+   Version naming for this remodel starts at 1.100 — and every new design
+   line is born at the game's version. Stored as integer thousandths:
+   1100 = v1.100, 1101 = v1.101. */
+var GAME_VERSION = 1100;
+function fmtVer(v) { return "v" + ((v == null ? 1000 : v) / 1000).toFixed(3); }
+function designLabel(d) { return (d.name || "Unnamed design") + " " + fmtVer(d.ver); }
+function nextVerFor(name) {
+  var max = GAME_VERSION - 1;
+  if (!S) return GAME_VERSION;
+  S.blueprints.forEach(function (bp) {
+    if (bp.name.trim().toLowerCase() === name.trim().toLowerCase()) max = Math.max(max, bp.ver == null ? GAME_VERSION : bp.ver);
+  });
+  return max + 1;
+}
+/* ================= CALENDAR (Detroit cadence, as specified: one WEEK per turn) ================= */
+var START_YEAR = 2708, CHARTER_END_YEAR = 2728, WEEKS_PER_YEAR = 52;
+function dateOf(turn) { var t = (turn == null ? S.turn : turn) - 1; return { year: START_YEAR + Math.floor(t / WEEKS_PER_YEAR), wk: t % WEEKS_PER_YEAR + 1 }; }
+function dateLabel(turn) { var d = dateOf(turn); return "Week " + d.wk + " · " + d.year; }
+function dateShort(turn) { var d = dateOf(turn); return d.year + " W" + d.wk; }
+function turnOfYear(y) { return (y - START_YEAR) * WEEKS_PER_YEAR + 1; }
+function eraOf(year) {
+  if (year < 2710) return { name: "The Founding Years", note: "Cheap alloy, eager colonists, and a galaxy that still believes peace is the normal state of things. Basic technology only — the lab earns everything else." };
+  if (year < 2713) return { name: "The Escalation", note: "Border wars multiply and the arms trade becomes the galaxy's growth industry. Ion-age technology reaches the market." };
+  if (year < 2716) return { name: "The Arms Race", note: "Heavy lances, missiles, and money. Every faction is re-arming and every yard that can build big hulls is booked solid." };
+  if (year < 2721) return { name: "The Long Boom", note: "Trade lanes thicken, colonies multiply, and freighters sell as fast as warships. A balanced catalogue wins this era." };
+  return { name: "The Mature Galaxy", note: "Consolidation. The weak yards are gone; the survivors fight on quality, reputation, and price discipline." };
+}
+/* Named era events — the foreseeable spine of history under the random events.
+   Keyed by turn (week). The Boardroom timeline shows them coming. */
+var ERA_EVENTS = {
+  24:  { headline: "MERIDIAN TRADE FAIR DRAWS RECORD CROWDS", text: "The great fair opens at Meridian Cross. Merchant fleets are ordering ahead of the season.", econ: { trade: 15, war: 0, left: 16 } },
+  62:  { headline: "THE KEPLER SLUMP: COLONIAL ORDERS DRY UP", text: "A banking scare in the Kepler colonies cuts freighter demand across the galaxy.", econ: { trade: -20, war: 0, left: 26 } },
+  110: { headline: "DUSK VERGE ESCALATION — FLEETS MOBILISE", text: "Both fleets call up reserves. Warship demand surges and stays hot.", econ: { trade: 0, war: 25, left: 34 } },
+  156: { headline: "THE FOUNDING WAR BEGINS", text: "The border skirmishes become a general war. Every yard with a slipway is suddenly strategic infrastructure.", econ: { trade: -10, war: 35, left: 40 } },
+  178: { headline: "DRIVE-CORE SHORTAGE BITES SHIPYARDS GALAXY-WIDE", text: "Refinery failures send component prices to record highs. Yards with full component bins are sitting pretty.", compShock: true },
+  244: { headline: "THE GOLDEN LANE BOOM", text: "New colony charters along the Golden Lane lift every kind of demand at once.", econ: { trade: 20, war: 10, left: 26 } },
+  313: { headline: "PIRATE SCOURGE ON THE OUTER LANES", text: "Raider fleets, better organised than any navy admits, begin a season of convoy-hunting.", pirates: 24 },
+  360: { headline: "THE LONG QUIET SETTLES OVER THE GALAXY", text: "The great depression of the space age. Fleets mothball, colonies tighten belts, and for two years only cheap hulls sell — premium prices are turned away at the showroom door.", econ: { trade: -35, war: -25, left: 104 }, longQuiet: 104 },
+  470: { headline: "THE EMBER EMBARGO: LANES CLOSED BY DECREE", text: "The Imperium blockades Emberfall. Convoys reroute the long way round: deliveries take longer and the lanes turn dangerous until it lifts.", embargo: 16 },
+  530: { headline: "SECOND FOUNDING: A NEW COLONY WAVE", text: "A hundred new colony charters in a single season. Everybody needs hulls — everybody.", econ: { trade: 15, war: 15, left: 34 } },
+  640: { headline: "THE GILDED AGE OF THE INNER LANES", text: "Peace dividends and colony profits make the inner galaxy rich, and rich sectors buy beautiful ships.", econ: { trade: 25, war: 10, left: 40 } }
+};
+/* ================= DATA ================= */
+var FACTIONS = { imperium: "Galactic Imperium", alliance: "Free Systems Alliance", syndicate: "Vossk Syndicate", neutral: "Independent Worlds" };
+var SIZES = {
+  fighter:  { name: "Fighter",   fire: 3,  speed: 8, cargo: 1,  cr: 900,   alloy: 6,  comp: 4,  weeks: 1, value: 1500 },
+  corvette: { name: "Corvette",  fire: 5,  speed: 6, cargo: 3,  cr: 2100,  alloy: 14, comp: 8,  weeks: 2, value: 3400 },
+  frigate:  { name: "Frigate",   fire: 8,  speed: 5, cargo: 5,  cr: 4200,  alloy: 26, comp: 14, weeks: 3, value: 6800 },
+  capital:  { name: "Capital Ship", fire: 13, speed: 3, cargo: 8, cr: 9500, alloy: 55, comp: 30, weeks: 5, value: 15500 }
+};
+var HULLS = {
+  wedge:  { name: "Wedge Hull",    fire: 2, speed: 0,  cargo: 0, crMult: 1.0,  alloy: 2, comp: 0 },
+  arrow:  { name: "Arrow Hull",    fire: 0, speed: 3,  cargo: 0, crMult: 1.05, alloy: 0, comp: 1 },
+  bulwark:{ name: "Bulwark Hull",  fire: 1, speed: -1, cargo: 2, crMult: 1.15, alloy: 6, comp: 0 },
+  hauler: { name: "Hauler Frame",  fire: -1, speed: -1, cargo: 6, crMult: 0.95, alloy: 3, comp: 0 }
+};
+var ENGINES = {
+  standard: { name: "Standard Drives",   fire: 0, speed: 0, cargo: 0, crMult: 1.0,  alloy: 0, comp: 0 },
+  ion:      { name: "Ion Sprint Drives", fire: 0, speed: 3, cargo: 0, crMult: 1.2,  alloy: 0, comp: 4 },
+  twin:     { name: "Twin Drives",       fire: 0, speed: 1, cargo: 1, crMult: 1.1,  alloy: 1, comp: 2 },
+  heavy:    { name: "Heavy Haul Drives", fire: 0, speed: -2, cargo: 3, crMult: 1.05, alloy: 2, comp: 0 }
+};
+var WEAPONS = {
+  none:   { name: "None — cargo fit", fire: 0, crMult: 1.0,  alloy: 0, comp: 0 },
+  laser:  { name: "Laser Cannons",    fire: 3, crMult: 1.1,  alloy: 1, comp: 2 },
+  ionc:   { name: "Arc Cannons",      fire: 4, crMult: 1.18, alloy: 1, comp: 5 },
+  missile:{ name: "Missile Pods",     fire: 5, crMult: 1.22, alloy: 3, comp: 3 },
+  turbo:  { name: "Heavy Lance Battery", fire: 7, crMult: 1.35, alloy: 4, comp: 6 }
+};
+var PAINTS = ["#ffb340", "#3fd0c9", "#ff5d5d", "#5fd68a", "#e8eef7", "#f27fd0"];
+/* Research: Detroit's marching technology, by era. part locks map designer options to techs. */
+var TECHS = [
+  { id: "arrow",   name: "Arrow Hull — Streamlined Frame", cost: 45,  year: 2708, desc: "Unlocks the Arrow Hull in the Design Office: all speed, no wasted metal." },
+  { id: "twin",    name: "Twin Drive Layout",              cost: 30,  year: 2708, desc: "Unlocks Twin Drives: a balanced second engine block with a cargo bonus." },
+  { id: "bulwark", name: "Bulwark Hull — Armour Belt",      cost: 50,  year: 2709, desc: "Unlocks the Bulwark Hull: slow, heavy, and very hard to argue with." },
+  { id: "ion",     name: "Ion Sprint Drives",              cost: 65,  year: 2709, desc: "Unlocks Ion Sprint Drives: the fastest legal propulsion of the new era." },
+  { id: "ionc",    name: "Arc Cannons",                    cost: 70,  year: 2710, desc: "Unlocks Arc Cannons: shield-hungry guns the fleets are beginning to demand." },
+  { id: "heavy",   name: "Heavy Haul Drives",              cost: 55,  year: 2710, desc: "Unlocks Heavy Haul Drives: freight muscle for serious cargo work." },
+  { id: "missile", name: "Missile Pods",                   cost: 90,  year: 2711, desc: "Unlocks Missile Pods: stand-off firepower, beloved of border fleets." },
+  { id: "autofab", name: "Automated Assembly",             cost: 85,  year: 2711, desc: "Robotic slipway gantries. Every build costs 15% fewer credits, forever." },
+  { id: "dealernet", name: "Holo-Showroom Network",        cost: 75,  year: 2712, desc: "Immersive showrooms in every dealership: 15% more buyers walk in, every week." },
+  { id: "turbo",   name: "Heavy Lance Battery",             cost: 140, year: 2713, desc: "Unlocks the Heavy Lance Battery: capital-grade firepower, the arms race's signature weapon." },
+  { id: "shielded", name: "Shielded Convoy Doctrine",      cost: 95,  year: 2714, desc: "Escort doctrine and decoy drones: delivery risk is halved again on every lane." }
+];
+var PART_TECH = { hull: { arrow: "arrow", bulwark: "bulwark" }, engine: { twin: "twin", ion: "ion", heavy: "heavy" }, weapon: { ionc: "ionc", missile: "missile", turbo: "turbo" } };
+function techName(id) { for (var i = 0; i < TECHS.length; i++) if (TECHS[i].id === id) return TECHS[i].name; return id; }
+function partLocked(kind, key) {
+  var map = PART_TECH[kind]; if (!map || !map[key]) return null;
+  var tid = map[key];
+  return (S && S.tech[tid]) ? null : tid;
+}
+var WAGES = {
+  low:      { name: "Low pay", rate: 6,  quality: 0.93, note: "quality 93%" },
+  standard: { name: "Standard pay", rate: 9, quality: 1.0, note: "quality 100%" },
+  high:     { name: "High pay", rate: 13, quality: 1.08, note: "quality 108%" }
+};
+var ROLES = {
+  designer: { name: "Chief Designer", effect: "Test-flight appeal +" },
+  foreman:  { name: "Yard Foreman", effect: "Line speed & quality +" },
+  sales:    { name: "Sales Director", effect: "Showroom buyers +" },
+  research: { name: "Research Lead", effect: "Research points +" }
+};
+var FIRST_NAMES = ["Ada","Bram","Celia","Doran","Eska","Felix","Greta","Hollis","Ilya","Juno","Kaspar","Lena","Milo","Nadia","Orin","Petra","Quill","Rhea","Stellan","Tova","Umar","Vera","Wendell","Yara"];
+var LAST_NAMES = ["Ashford","Brandt","Calloway","Draper","Ellery","Ferro","Grange","Hollander","Ingram","Jessop","Kettler","Loomis","Marlowe","Nestor","Osman","Pruitt","Quarry","Renshaw","Stroud","Tallow","Umber","Vance","Whitlock","Yardley"];
+var RIVAL_DEFS = [
+  { name: "Vossk Combine Yards", style: "Syndicate volume builders — cheap hulls, endless output." },
+  { name: "Imperium State Arsenals", style: "State arsenals riding Imperial fleet contracts." },
+  { name: "Meridian Starworks", style: "Polished merchant house; strong freighter marque." }
+];
+var SECTOR_DEFS = [
+  { id: "aurel",    name: "Aurel Core",      gx: 0, gy: 0, faction: "imperium",  status: "peace",   specialty: "trade",    desc: "Imperium capital worlds. Deep pockets, strict inspectors, steady demand for respectable hulls." },
+  { id: "kharun",   name: "Kharun Belt",     gx: 1, gy: 0, faction: "neutral",   status: "peace",   specialty: "mining",   desc: "Asteroid mines and ore docks. Alloy is cheap here, and a yard in the Belt feeds itself." },
+  { id: "talon",    name: "Talon Marches",   gx: 2, gy: 0, faction: "imperium",  status: "tension", specialty: "none",     desc: "Imperium border forts staring across the dark at Alliance pickets. Nerves — and budgets — are up." },
+  { id: "dusk",     name: "Dusk Verge",      gx: 3, gy: 0, faction: "alliance",  status: "war",     specialty: "none",     desc: "The hottest front in the galaxy. The Alliance is losing hulls faster than it can replace them." },
+  { id: "corvane",  name: "Corvane Reach",   gx: 0, gy: 1, faction: "neutral",   status: "peace",   specialty: "shipyard", desc: "Your home sector. Old yards, skilled crews, and room to grow." },
+  { id: "meridian", name: "Meridian Cross",  gx: 1, gy: 1, faction: "neutral",   status: "peace",   specialty: "trade",    desc: "The great crossroads. Every trade lane in the inner galaxy passes a Meridian dock sooner or later." },
+  { id: "vant",     name: "Vant Hollow",     gx: 2, gy: 1, faction: "syndicate", status: "tension", specialty: "refinery", desc: "Syndicate refineries turn raw feedstock into drive components. Nobody asks where the feedstock comes from." },
+  { id: "sable",    name: "Sable Drift",     gx: 3, gy: 1, faction: "syndicate", status: "peace",   specialty: "none",     desc: "Syndicate free ports. Fast money, loose questions, and buyers who pay extra for guns on a quiet hull." },
+  { id: "ithra",    name: "Ithra Expanse",   gx: 0, gy: 2, faction: "alliance",  status: "peace",   specialty: "agri",     desc: "Alliance grain worlds. They feed half the galaxy and always need freighters that do not break down." },
+  { id: "ossian",   name: "Ossian Shoals",   gx: 1, gy: 2, faction: "neutral",   status: "peace",   specialty: "none",     desc: "Shallow, treacherous lanes. Slow going, quiet worlds, honest prices." },
+  { id: "greywater",name: "Greywater Run",   gx: 2, gy: 2, faction: "alliance",  status: "tension", specialty: "none",     desc: "A smuggling run turned battleground-in-waiting. Alliance patrols double every week." },
+  { id: "emberfall",name: "Emberfall",       gx: 3, gy: 2, faction: "imperium",  status: "war",     specialty: "mining",   desc: "A mining world the Imperium refuses to lose. Siege prices on everything that flies and shoots." }
+];
+var CONTRACT_FLAVOR = {
+  imperium: ["Imperial Procurement Office", "Imperium Fleet Command", "Sector Admiralty — Imperium"],
+  alliance: ["Alliance Fleet Logistics", "Free Systems Defense Council", "Alliance Quartermaster Corps"],
+  syndicate: ["Vossk Trade Combine", "Syndicate Factors Guild", "A Friend of the Combine"],
+  neutral: ["Independent Worlds Consortium", "Meridian Shippers Guild", "Colonial Transport Board"]
+};
+/* ================= HELPERS ================= */
+function $(id) { return document.getElementById(id); }
+function fmt(n) { return "₡" + Math.round(n).toLocaleString("en-US"); }
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+function rnd(a, b) { return a + Math.random() * (b - a); }
+function ri(a, b) { return Math.floor(rnd(a, b + 1)); }
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
+function stars(n) { var s = ""; for (var i = 0; i < 5; i++) s += i < n ? "★" : "☆"; return s; }
+function sectorById(id) { return S.sectors[id]; }
+function dist(a, b) { return Math.abs(a.gx - b.gx) + Math.abs(a.gy - b.gy); }
+function transitWeeks(a, b) { return Math.max(1, Math.ceil(dist(a, b) / 2)) + ((typeof S !== "undefined" && S && S.embargoUntil && S.turn < S.embargoUntil) ? 1 : 0); }
+function flash(msg, warn) { var f = $("flash"); f.textContent = msg; f.className = "flash" + (warn ? " warn" : ""); }
+function logNews(text) { S.news.unshift({ turn: S.turn, text: text }); if (S.news.length > 40) S.news.length = 40; }
+/* ================= DESIGN MATH ================= */
+function designStats(d) {
+  var sz = SIZES[d.size], hu = HULLS[d.hull], en = ENGINES[d.engine], we = WEAPONS[d.weapon];
+  var fire = Math.max(0, sz.fire + hu.fire + en.fire + we.fire);
+  var speed = Math.max(1, sz.speed + hu.speed + en.speed);
+  var cargo = Math.max(0, sz.cargo + hu.cargo + en.cargo);
+  var cr = Math.round(sz.cr * hu.crMult * en.crMult * we.crMult);
+  if (typeof S !== "undefined" && S && S.tech && S.tech.autofab) cr = Math.round(cr * 0.85);
+  if (typeof S !== "undefined" && S && S.tech && S.tech.grandfab) cr = Math.round(cr * 0.88);
+  var alloy = sz.alloy + hu.alloy + en.alloy + we.alloy;
+  var comp = sz.comp + hu.comp + en.comp + we.comp;
+  var value = Math.round(sz.value * hu.crMult * en.crMult * we.crMult);
+  return { fire: fire, speed: speed, cargo: cargo, cr: cr, alloy: alloy, comp: comp, weeks: sz.weeks, value: value,
+    role: d.weapon === "none" ? "Freighter" : "Warship", sizeName: sz.name };
+}
+function askingPrice(d) { var st = designStats(d); return d.price ? Math.round(d.price) : st.value; }
+function appealOf(d) { return d.appeal == null ? 100 : d.appeal; }
+function demandOf(sec) {
+  var war = 15, trade = 35;
+  if (sec.status === "war") { war = 85; trade = 20; }
+  else if (sec.status === "tension") { war = 50; trade = 30; }
+  if (sec.specialty === "trade") trade += 25;
+  if (sec.specialty === "agri") trade += 15;
+  if (sec.specialty === "shipyard") { war += 5; trade += 5; }
+  if (sec.surge) { if (sec.surge.type === "war") war += 25; if (sec.surge.type === "trade") trade += 25; }
+  if (S.econ && S.econ.left > 0) { war += S.econ.war; trade += S.econ.trade; }
+  return { war: clamp(war, 0, 130), trade: clamp(trade, 0, 130) };
+}
+function marketPrice(sec, stats) {
+  var dem = demandOf(sec);
+  var p = stats.value * (0.9 + (stats.role === "Warship" ? dem.war : dem.trade) / 100);
+  if (stats.role === "Warship" && sec.faction === "syndicate" && stats.speed >= 7) p *= 1.08;
+  if (stats.role === "Warship" && sec.faction === "imperium" && (stats.sizeName === "Frigate" || stats.sizeName === "Capital Ship")) p *= 1.08;
+  return Math.round(p);
+}
+function riskAt(sec) {
+  var r = sec.status === "war" ? 15 : sec.status === "tension" ? 5 : 0;
+  if (S.pirates > 0) r += 8;
+  if (S.hubs[sec.id]) r = Math.round(r / 2);
+  if (S.tech.shielded) r = Math.round(r / 2);
+  if (S.embargoUntil && S.turn < S.embargoUntil) r += 12;
+  return r;
+}
+function mgrSkill(role) { var m = S.managers[role]; return m ? m.skill : 0; }
+function netWorth() {
+  var w = S.credits + S.alloy * S.prices.alloy + S.components * S.prices.comp;
+  S.stock.forEach(function (sh) { w += Math.round(designStats(sh.design).value * 0.8); });
+  S.transit.forEach(function (t) { w += Math.round(designStats(t.design).value * 0.8); });
+  w += S.yards.length * 4000 + Object.keys(S.hubs).length * 1500;
+  S.yards.forEach(function (y) { w += (y.level - 1) * 1500; });
+  return Math.round(w);
+}
+
+/* ================= STATE ================= */
+var S = null;
+var ui = { view: "board", sector: "corvane", design: { size: "corvette", hull: "wedge", engine: "standard", weapon: "laser", name: "", ver: GAME_VERSION, price: null, appeal: null }, shipDest: {}, test: null, refit: {} };
+var uidCounter = 1;
+function uid() { return uidCounter++; }
+function makeCandidate(role) {
+  var skill = ri(1, 5);
+  return { id: uid(), role: role, name: pick(FIRST_NAMES) + " " + pick(LAST_NAMES), skill: skill, salary: skill * 22 + ri(3, 15) };
+}
+function newGame() {
+  uidCounter = 1;
+  S = {
+    turn: 1, credits: 15000, alloy: 60, components: 40,
+    prices: { alloy: 42, comp: 65 },
+    sectors: {}, hubs: {}, yards: [], blueprints: [], stock: [], transit: [],
+    offers: [], active: [], news: [], pirates: 0, won: false, over: false, charterShown: false,
+    tech: {}, rp: 12, resBudget: 75,
+    managers: { designer: null, foreman: null, sales: null, research: null }, pool: [],
+    marketing: {}, econ: { war: 0, trade: 0, left: 0 }, lastHeadline: "",
+    rivals: RIVAL_DEFS.map(function (r) { return { name: r.name, style: r.style, lastUnits: 0, lastRev: 0, cumRev: 0, cumUnits: 0 }; }),
+    history: [], cumPlayerRev: 0, lastWeek: null,
+    rep: 50, trophies: [], patents: {}, rivalPatented: {}, race: {}, scout: {}, loan: null,
+    longQuietUntil: 0, embargoUntil: 0, expoCount: 0, charterPending: false
+  };
+  SECTOR_DEFS.forEach(function (d) {
+    S.sectors[d.id] = { id: d.id, name: d.name, gx: d.gx, gy: d.gy, faction: d.faction, status: d.status, specialty: d.specialty, desc: d.desc, surge: null };
+    S.marketing[d.id] = 0;
+  });
+  S.blueprints.push(
+    { id: uid(), name: "Patrol Corvette", ver: GAME_VERSION, size: "corvette", hull: "wedge", engine: "standard", weapon: "laser", price: 3900, appeal: 100 },
+    { id: uid(), name: "Light Freighter", ver: GAME_VERSION, size: "corvette", hull: "hauler", engine: "standard", weapon: "none", price: 3100, appeal: 100 }
+  );
+  S.yards.push({ id: uid(), name: "Corvane Prime Yards", sector: "corvane", level: 1, tooling: "corvette", slots: [null], retool: null, workers: 40, wage: "standard" });
+  S.hubs["corvane"] = true;
+  ["designer", "foreman", "sales", "research"].forEach(function (role) { S.pool.push(makeCandidate(role)); S.pool.push(makeCandidate(role)); });
+  TECHS.forEach(function (t) { S.race[t.id] = turnOfYear(t.year) + ri(20, 160); });
+  S.rivals.forEach(function (r) { r.design = genRivalDesign(r); });
+  logNews("Corvane Consolidated Yards opens its books — " + fmtVer(GAME_VERSION) + ". One yard, one dealership, a hired-nobody staff, and a galaxy at war with itself. The charter runs to 2728.");
+  logNews("War in the Dusk Verge and at Emberfall is driving warship demand to siege levels.");
+  spawnOffer(); spawnOffer(); spawnOffer();
+}
+/* ================= SHIP SVG ================= */
+function paintFor(d) {
+  var seed = (d.size + d.hull + d.engine + d.weapon + d.name).split("").reduce(function (a, c) { return a + c.charCodeAt(0); }, 0);
+  return PAINTS[seed % PAINTS.length];
+}
+function shipSvg(d, w) {
+  var paint = paintFor(d);
+  var scale = { fighter: 0.62, corvette: 0.82, frigate: 1.0, capital: 1.18 }[d.size];
+  var L = 300 * scale, cx = 210, cy = 78;
+  var x0 = cx - L / 2, x1 = cx + L / 2;
+  var body = "";
+  if (d.hull === "wedge") {
+    body = '<polygon points="' + x0 + ',' + (cy + 26) + ' ' + x1 + ',' + cy + ' ' + x0 + ',' + (cy - 26) + '" fill="' + paint + '" opacity="0.92"/>' +
+           '<polygon points="' + (x0 + L * 0.12) + ',' + (cy + 15) + ' ' + (x1 - L * 0.1) + ',' + cy + ' ' + (x0 + L * 0.12) + ',' + (cy - 15) + '" fill="#0b1120" opacity="0.35"/>';
+  } else if (d.hull === "arrow") {
+    body = '<polygon points="' + x0 + ',' + (cy + 12) + ' ' + (x0 + L * 0.55) + ',' + (cy + 6) + ' ' + x1 + ',' + cy + ' ' + (x0 + L * 0.55) + ',' + (cy - 6) + ' ' + x0 + ',' + (cy - 12) + '" fill="' + paint + '" opacity="0.92"/>' +
+           '<polygon points="' + (x0 + L * 0.3) + ',' + (cy + 20) + ' ' + (x0 + L * 0.52) + ',' + (cy + 4) + ' ' + (x0 + L * 0.3) + ',' + (cy + 4) + '" fill="' + paint + '" opacity="0.7"/>' +
+           '<polygon points="' + (x0 + L * 0.3) + ',' + (cy - 20) + ' ' + (x0 + L * 0.52) + ',' + (cy - 4) + ' ' + (x0 + L * 0.3) + ',' + (cy - 4) + '" fill="' + paint + '" opacity="0.7"/>';
+  } else if (d.hull === "bulwark") {
+    body = '<rect x="' + x0 + '" y="' + (cy - 27) + '" width="' + L * 0.8 + '" height="54" rx="10" fill="' + paint + '" opacity="0.92"/>' +
+           '<polygon points="' + (x0 + L * 0.8) + ',' + (cy - 27) + ' ' + x1 + ',' + cy + ' ' + (x0 + L * 0.8) + ',' + (cy + 27) + '" fill="' + paint + '" opacity="0.92"/>' +
+           '<rect x="' + (x0 + 8) + '" y="' + (cy - 19) + '" width="' + L * 0.62 + '" height="38" rx="7" fill="#0b1120" opacity="0.3"/>';
+  } else {
+    body = '<rect x="' + x0 + '" y="' + (cy - 21) + '" width="' + L * 0.86 + '" height="42" rx="14" fill="' + paint + '" opacity="0.92"/>' +
+           '<circle cx="' + x1 + '" cy="' + cy + '" r="15" fill="' + paint + '"/>' +
+           '<rect x="' + (x0 + L * 0.2) + '" y="' + (cy - 13) + '" width="' + L * 0.16 + '" height="26" rx="4" fill="#0b1120" opacity="0.35"/>' +
+           '<rect x="' + (x0 + L * 0.44) + '" y="' + (cy - 13) + '" width="' + L * 0.16 + '" height="26" rx="4" fill="#0b1120" opacity="0.35"/>' +
+           '<rect x="' + (x0 + L * 0.68) + '" y="' + (cy - 13) + '" width="' + L * 0.12 + '" height="26" rx="4" fill="#0b1120" opacity="0.35"/>';
+  }
+  var engines = "";
+  var nEng = d.engine === "twin" || d.engine === "heavy" ? 3 : d.engine === "ion" ? 2 : 1;
+  var eSpread = nEng === 1 ? [0] : nEng === 2 ? [-13, 13] : [-19, 0, 19];
+  var eLen = d.engine === "ion" ? 34 : d.engine === "heavy" ? 24 : 18;
+  eSpread.forEach(function (off) {
+    engines += '<polygon points="' + x0 + ',' + (cy + off - 5) + ' ' + (x0 - eLen) + ',' + (cy + off) + ' ' + x0 + ',' + (cy + off + 5) + '" fill="#3fd0c9" opacity="0.85"/>' +
+               '<rect x="' + (x0 - 5) + '" y="' + (cy + off - 6) + '" width="8" height="12" rx="2" fill="#93a5c0"/>';
+  });
+  var guns = "";
+  if (d.weapon !== "none") {
+    var nG = d.weapon === "turbo" ? 3 : 2;
+    for (var i = 0; i < nG; i++) {
+      var gx = x0 + L * (0.42 + i * 0.17), len = d.weapon === "turbo" ? 26 : 17;
+      guns += '<circle cx="' + gx + '" cy="' + cy + '" r="5.5" fill="#26334d" stroke="#93a5c0" stroke-width="1.4"/>' +
+              '<rect x="' + gx + '" y="' + (cy - 1.8) + '" width="' + len + '" height="3.6" fill="#e8eef7"/>';
+      if (d.weapon === "missile") guns += '<rect x="' + (gx - 7) + '" y="' + (cy - 9) + '" width="13" height="5" rx="2" fill="#ff5d5d"/>';
+      if (d.weapon === "ionc") guns += '<circle cx="' + (gx + len) + '" cy="' + cy + '" r="3.4" fill="#3fd0c9"/>';
+    }
+  } else {
+    guns = '<text x="' + cx + '" y="' + (cy + 44) + '" text-anchor="middle" font-size="11" fill="#93a5c0" font-family="Rajdhani" font-weight="600">CARGO FIT — UNARMED</text>';
+  }
+  return '<svg viewBox="0 0 420 156" width="' + (w || "100%") + '" role="img" aria-label="Ship preview">' + engines + body + guns +
+    '<circle cx="' + (x0 + L * 0.78) + '" cy="' + cy + '" r="3.2" fill="#0b1120" opacity="0.65"/></svg>';
+}
+/* ================= CONTRACTS ================= */
+function spawnOffer() {
+  var sec = pick(Object.values(S.sectors));
+  var warBias = sec.status === "war" ? 0.75 : sec.status === "tension" ? 0.5 : 0.25;
+  var isWar = Math.random() < warBias;
+  var sizeKey = pick(isWar ? ["fighter", "corvette", "corvette", "frigate", "capital"] : ["corvette", "corvette", "frigate", "fighter"]);
+  var count = sizeKey === "capital" ? 1 : ri(2, 4);
+  var openParts = { hulls: Object.keys(HULLS).filter(function (k) { return !partLocked("hull", k); }),
+                    engines: Object.keys(ENGINES).filter(function (k) { return !partLocked("engine", k); }),
+                    weapons: Object.keys(WEAPONS).filter(function (k) { return !partLocked("weapon", k); }) };
+  var template = isWar
+    ? { size: sizeKey, hull: pick(openParts.hulls), engine: pick(openParts.engines), weapon: pick(openParts.weapons.filter(function (k) { return k !== "none"; })) }
+    : { size: sizeKey, hull: pick(["hauler", "wedge", "bulwark"].filter(function (k) { return !partLocked("hull", k); })), engine: pick(openParts.engines), weapon: "none" };
+  var tst = designStats(template);
+  var req = { size: sizeKey };
+  if (isWar) req.minFire = Math.max(3, tst.fire - 3); else req.minCargo = Math.max(2, tst.cargo - 2);
+  S.offers.push({
+    id: uid(), faction: sec.faction, buyer: pick(CONTRACT_FLAVOR[sec.faction]),
+    sector: sec.id, req: req, count: count, delivered: 0,
+    perShip: Math.round(tst.value * 1.35), deadline: S.turn + ri(12, 24), isWar: isWar
+  });
+}
+function reqText(c) {
+  var parts = [SIZES[c.req.size].name + " class"];
+  if (c.req.minFire) parts.push("firepower ≥ " + c.req.minFire);
+  if (c.req.minCargo) parts.push("cargo ≥ " + c.req.minCargo);
+  return parts.join(" · ");
+}
+function matchesContract(shipDesign, c) {
+  var st = designStats(shipDesign);
+  if (shipDesign.size !== c.req.size) return false;
+  if (c.req.minFire && st.fire < c.req.minFire) return false;
+  if (c.req.minCargo && st.cargo < c.req.minCargo) return false;
+  return true;
+}
+
+/* ================= SHIP RENDER — every part has a silhouette =================
+   This enhanced renderer replaces the basic one above: hull = body shape and
+   plating, engines = nozzle count/size/flare, weapons = visible mounts,
+   size class = scale, bridge, window rows and detail. */
+function shipSvg(d, w) {
+  var paint = paintFor(d);
+  var scale = { fighter: 0.6, corvette: 0.8, frigate: 0.98, capital: 1.16 }[d.size];
+  var L = 300 * scale, cx = 210, cy = 80;
+  var x0 = cx - L / 2, x1 = cx + L / 2;
+  var big = d.size === "capital", mid = d.size === "frigate";
+  var s = "";
+  /* --- engine flares & nozzles (the drive signature) --- */
+  var engCfg = {
+    standard: { n: 1, spread: [0], len: 15, wdt: 9, col: "#ffd9a0", glow: 0.35, blocky: false },
+    twin:     { n: 3, spread: [-17, 0, 17], len: 22, wdt: 10, col: "#ffb340", glow: 0.5, blocky: false },
+    ion:      { n: 2, spread: [-13, 13], len: 42, wdt: 8, col: "#5ff2ff", glow: 0.85, blocky: false },
+    heavy:    { n: 3, spread: [-19, 0, 19], len: 20, wdt: 15, col: "#ff9a4d", glow: 0.55, blocky: true },
+    pulse:    { n: 3, spread: [-14, 0, 14], len: 19, wdt: 8, col: "#ffd9a0", glow: 0.5, blocky: false },
+    comet:    { n: 2, spread: [-14, 14], len: 50, wdt: 9, col: "#7df0c8", glow: 0.9, blocky: false },
+    titan:    { n: 4, spread: [-24, -8, 8, 24], len: 22, wdt: 14, col: "#ff9a4d", glow: 0.55, blocky: true },
+    voidrunner: { n: 3, spread: [-16, 0, 16], len: 56, wdt: 8, col: "#b9a7ff", glow: 0.95, blocky: false }
+  }[d.engine];
+  engCfg.spread.forEach(function (off) {
+    s += '<circle cx="' + (x0 - engCfg.len * 0.55) + '" cy="' + (cy + off) + '" r="' + (engCfg.wdt * 1.5) + '" fill="' + engCfg.col + '" opacity="' + (engCfg.glow * 0.35) + '"/>';
+    s += '<polygon points="' + x0 + ',' + (cy + off - engCfg.wdt / 2) + ' ' + (x0 - engCfg.len) + ',' + (cy + off) + ' ' + x0 + ',' + (cy + off + engCfg.wdt / 2) + '" fill="' + engCfg.col + '" opacity="' + engCfg.glow + '"/>';
+    if (engCfg.blocky) s += '<rect x="' + (x0 - 9) + '" y="' + (cy + off - 8) + '" width="12" height="16" rx="2" fill="#5a6c8c" stroke="#26334d"/>';
+    else s += '<rect x="' + (x0 - 6) + '" y="' + (cy + off - 6) + '" width="9" height="12" rx="3" fill="#7e93b5"/>';
+    if (d.engine === "ion" || d.engine === "comet" || d.engine === "voidrunner") s += '<circle cx="' + (x0 - 4) + '" cy="' + (cy + off) + '" r="8.5" fill="none" stroke="#5ff2ff" stroke-width="1.6" opacity="0.8"/>';
+  });
+  /* --- hull body (the silhouette) --- */
+  if (d.hull === "wedge") {
+    s += '<polygon points="' + x0 + ',' + (cy + 27) + ' ' + x1 + ',' + cy + ' ' + x0 + ',' + (cy - 27) + '" fill="' + paint + '"/>';
+    s += '<polygon points="' + (x0 + L * 0.14) + ',' + (cy + 15) + ' ' + (x1 - L * 0.12) + ',' + cy + ' ' + (x0 + L * 0.14) + ',' + (cy - 15) + '" fill="#0b1120" opacity="0.32"/>';
+    s += '<line x1="' + (x0 + L * 0.2) + '" y1="' + (cy - 17) + '" x2="' + (x0 + L * 0.2) + '" y2="' + (cy + 17) + '" stroke="#0b1120" stroke-width="2" opacity="0.3"/>';
+  } else if (d.hull === "arrow") {
+    s += '<polygon points="' + x0 + ',' + (cy + 11) + ' ' + (x0 + L * 0.55) + ',' + (cy + 5) + ' ' + x1 + ',' + cy + ' ' + (x0 + L * 0.55) + ',' + (cy - 5) + ' ' + x0 + ',' + (cy - 11) + '" fill="' + paint + '"/>';
+    s += '<polygon points="' + (x0 + L * 0.22) + ',' + (cy + 26) + ' ' + (x0 + L * 0.52) + ',' + (cy + 4) + ' ' + (x0 + L * 0.3) + ',' + (cy + 3) + '" fill="' + paint + '" opacity="0.75"/>';
+    s += '<polygon points="' + (x0 + L * 0.22) + ',' + (cy - 26) + ' ' + (x0 + L * 0.52) + ',' + (cy - 4) + ' ' + (x0 + L * 0.3) + ',' + (cy - 3) + '" fill="' + paint + '" opacity="0.75"/>';
+    s += '<polygon points="' + (x0 + L * 0.08) + ',' + cy + ' ' + (x0 + L * 0.3) + ',' + (cy - 34) + ' ' + (x0 + L * 0.38) + ',' + (cy - 4) + '" fill="' + paint + '" opacity="0.6"/>';
+  } else if (d.hull === "bulwark") {
+    s += '<rect x="' + x0 + '" y="' + (cy - 28) + '" width="' + L * 0.8 + '" height="56" rx="9" fill="' + paint + '"/>';
+    s += '<polygon points="' + (x0 + L * 0.8) + ',' + (cy - 28) + ' ' + x1 + ',' + cy + ' ' + (x0 + L * 0.8) + ',' + (cy + 28) + '" fill="' + paint + '"/>';
+    for (var pi = 0; pi < 3; pi++) {
+      var px = x0 + 12 + pi * L * 0.22;
+      s += '<rect x="' + px + '" y="' + (cy - 21) + '" width="' + L * 0.17 + '" height="42" rx="5" fill="#0b1120" opacity="0.22" stroke="#e8eef7" stroke-opacity="0.25"/>';
+    }
+    s += '<rect x="' + x0 + '" y="' + (cy - 4) + '" width="' + L * 0.8 + '" height="8" fill="#0b1120" opacity="0.3"/>';
+  } else if (d.hull === "spearhead") {
+    s += '<polygon points="' + x0 + ',' + (cy + 14) + ' ' + (x0 + L * 0.7) + ',' + (cy + 5) + ' ' + x1 + ',' + cy + ' ' + (x0 + L * 0.7) + ',' + (cy - 5) + ' ' + x0 + ',' + (cy - 14) + '" fill="' + paint + '"/>';
+    s += '<polygon points="' + (x0 + L * 0.1) + ',' + (cy + 13) + ' ' + (x0 + L * 0.45) + ',' + (cy + 30) + ' ' + (x0 + L * 0.55) + ',' + (cy + 6) + '" fill="' + paint + '" opacity="0.8"/>';
+    s += '<polygon points="' + (x0 + L * 0.1) + ',' + (cy - 13) + ' ' + (x0 + L * 0.45) + ',' + (cy - 30) + ' ' + (x0 + L * 0.55) + ',' + (cy - 6) + '" fill="' + paint + '" opacity="0.8"/>';
+    s += '<rect x="' + (x0 + L * 0.3) + '" y="' + (cy - 3) + '" width="' + L * 0.4 + '" height="6" fill="#0b1120" opacity="0.3"/>';
+  } else if (d.hull === "bastion") {
+    s += '<rect x="' + x0 + '" y="' + (cy - 32) + '" width="' + L * 0.82 + '" height="64" rx="8" fill="' + paint + '"/>';
+    s += '<polygon points="' + (x0 + L * 0.82) + ',' + (cy - 32) + ' ' + x1 + ',' + cy + ' ' + (x0 + L * 0.82) + ',' + (cy + 32) + '" fill="' + paint + '"/>';
+    for (var bi = 0; bi < 4; bi++) { var bx = x0 + 10 + bi * L * 0.19; s += '<rect x="' + bx + '" y="' + (cy - 25) + '" width="' + L * 0.15 + '" height="50" rx="4" fill="#0b1120" opacity="0.25" stroke="#e8eef7" stroke-opacity="0.3"/>'; }
+    s += '<rect x="' + (x0 + L * 0.3) + '" y="' + (cy - 38) + '" width="' + L * 0.2 + '" height="8" rx="3" fill="' + paint + '" opacity="0.85"/>';
+    s += '<rect x="' + (x0 + L * 0.3) + '" y="' + (cy + 30) + '" width="' + L * 0.2 + '" height="8" rx="3" fill="' + paint + '" opacity="0.85"/>';
+  } else if (d.hull === "aegis") {
+    s += '<rect x="' + x0 + '" y="' + (cy - 29) + '" width="' + L * 0.8 + '" height="58" rx="12" fill="' + paint + '"/>';
+    s += '<polygon points="' + (x0 + L * 0.8) + ',' + (cy - 29) + ' ' + x1 + ',' + cy + ' ' + (x0 + L * 0.8) + ',' + (cy + 29) + '" fill="' + paint + '"/>';
+    s += '<ellipse cx="' + (x0 + L * 0.52) + '" cy="' + cy + '" rx="' + L * 0.42 + '" ry="40" fill="#5ff2ff" opacity="0.13"/>';
+    s += '<ellipse cx="' + (x0 + L * 0.52) + '" cy="' + cy + '" rx="' + L * 0.42 + '" ry="40" fill="none" stroke="#5ff2ff" stroke-width="1.4" opacity="0.55"/>';
+    for (var ai = 0; ai < 3; ai++) { var ax = x0 + 12 + ai * L * 0.22; s += '<rect x="' + ax + '" y="' + (cy - 21) + '" width="' + L * 0.17 + '" height="42" rx="5" fill="#0b1120" opacity="0.2"/>'; }
+  } else { /* hauler */
+    s += '<rect x="' + x0 + '" y="' + (cy - 20) + '" width="' + L * 0.86 + '" height="40" rx="13" fill="' + paint + '"/>';
+    s += '<circle cx="' + x1 + '" cy="' + cy + '" r="14" fill="' + paint + '"/>';
+    var contCols = ["#3fd0c9", "#ffc95e", "#ff5d5d", "#5fd68a"];
+    for (var ci = 0; ci < 4; ci++) {
+      s += '<rect x="' + (x0 + L * (0.14 + ci * 0.19)) + '" y="' + (cy - 13) + '" width="' + L * 0.15 + '" height="26" rx="3" fill="' + contCols[ci] + '" opacity="0.75" stroke="#0b1120" stroke-opacity="0.4"/>';
+    }
+  }
+  /* --- bridge & windows (size-class detail) --- */
+  if (big) {
+    s += '<rect x="' + (x0 + L * 0.62) + '" y="' + (cy - 40) + '" width="' + L * 0.13 + '" height="14" rx="4" fill="' + paint + '" stroke="#0b1120" stroke-opacity="0.35"/>';
+    s += '<rect x="' + (x0 + L * 0.65) + '" y="' + (cy - 37) + '" width="' + L * 0.07 + '" height="5" fill="#bfe9ff"/>';
+  }
+  var winN = big ? 7 : mid ? 5 : d.size === "corvette" ? 3 : 1;
+  for (var wi = 0; wi < winN; wi++) {
+    s += '<circle cx="' + (x0 + L * (0.55 + wi * 0.055)) + '" cy="' + (cy + (d.hull === "bulwark" ? 12 : 8)) + '" r="1.7" fill="#ffe9a8" opacity="0.95"/>';
+  }
+  s += '<circle cx="' + (x0 + L * 0.8) + '" cy="' + cy + '" r="3.2" fill="#0b1120" opacity="0.6"/>';
+  /* --- weapons (the visible armament) --- */
+  function turret(tx, barrelLen, barrelW, col) {
+    return '<circle cx="' + tx + '" cy="' + cy + '" r="6" fill="#26334d" stroke="#93a5c0" stroke-width="1.4"/>' +
+           '<rect x="' + tx + '" y="' + (cy - barrelW / 2) + '" width="' + barrelLen + '" height="' + barrelW + '" fill="' + (col || "#e8eef7") + '"/>';
+  }
+  if (d.weapon === "laser") {
+    s += turret(x0 + L * 0.45, 16, 3.4) + turret(x0 + L * 0.66, 16, 3.4);
+  } else if (d.weapon === "ionc") {
+    [0.44, 0.64].forEach(function (f) {
+      var tx2 = x0 + L * f;
+      s += turret(tx2, 15, 4, "#9be8ff") + '<circle cx="' + (tx2 + 17) + '" cy="' + cy + '" r="4.4" fill="#3fd0c9"/>' + '<circle cx="' + (tx2 + 17) + '" cy="' + cy + '" r="8" fill="#3fd0c9" opacity="0.3"/>';
+    });
+  } else if (d.weapon === "missile") {
+    [0.4, 0.62].forEach(function (f) {
+      var mx = x0 + L * f;
+      s += '<rect x="' + (mx - 9) + '" y="' + (cy - 24) + '" width="19" height="9" rx="2.5" fill="#8c2f2f" stroke="#0b1120" stroke-opacity="0.4"/>';
+      s += '<rect x="' + (mx - 9) + '" y="' + (cy + 15) + '" width="19" height="9" rx="2.5" fill="#8c2f2f" stroke="#0b1120" stroke-opacity="0.4"/>';
+      for (var mi = 0; mi < 3; mi++) {
+        s += '<polygon points="' + (mx - 6 + mi * 6) + ',' + (cy - 24) + ' ' + (mx - 3 + mi * 6) + ',' + (cy - 29) + ' ' + (mx + mi * 6) + ',' + (cy - 24) + '" fill="#ff5d5d"/>';
+        s += '<polygon points="' + (mx - 6 + mi * 6) + ',' + (cy + 24) + ' ' + (mx - 3 + mi * 6) + ',' + (cy + 29) + ' ' + (mx + mi * 6) + ',' + (cy + 24) + '" fill="#ff5d5d"/>';
+      }
+    });
+    s += turret(x0 + L * 0.52, 13, 3);
+  } else if (d.weapon === "turbo") {
+    [0.36, 0.55, 0.74].forEach(function (f) {
+      var tx3 = x0 + L * f;
+      s += '<circle cx="' + tx3 + '" cy="' + cy + '" r="8" fill="#26334d" stroke="#ffb340" stroke-width="1.6"/>' +
+           '<rect x="' + tx3 + '" y="' + (cy - 3.4) + '" width="30" height="2.8" fill="#e8eef7"/>' +
+           '<rect x="' + tx3 + '" y="' + (cy + 0.8) + '" width="30" height="2.8" fill="#e8eef7"/>';
+    });
+  } else if (d.weapon === "flak") {
+    [0.42, 0.58, 0.74].forEach(function (f) {
+      var fx = x0 + L * f;
+      s += '<path d="M ' + (fx - 7) + ' ' + cy + ' A 7 7 0 0 1 ' + (fx + 7) + ' ' + cy + ' Z" fill="#7e93b5" stroke="#26334d"/>';
+      s += '<circle cx="' + fx + '" cy="' + (cy - 7) + '" r="1.8" fill="#ffc95e"/>';
+    });
+  } else if (d.weapon === "rail") {
+    var rx0 = x0 + L * 0.4;
+    s += '<rect x="' + rx0 + '" y="' + (cy - 3) + '" width="' + L * 0.52 + '" height="6" rx="3" fill="#c8d6ee"/>';
+    for (var ri2 = 0; ri2 < 4; ri2++) { s += '<rect x="' + (rx0 + 8 + ri2 * L * 0.12) + '" y="' + (cy - 6.5) + '" width="5" height="13" rx="2" fill="#3fd0c9"/>'; }
+    s += '<circle cx="' + rx0 + '" cy="' + cy + '" r="6.5" fill="#26334d" stroke="#93a5c0" stroke-width="1.4"/>';
+  } else if (d.weapon === "plasma") {
+    [0.42, 0.62].forEach(function (f) {
+      var px2 = x0 + L * f;
+      s += '<rect x="' + (px2 - 8) + '" y="' + (cy - 8) + '" width="20" height="16" rx="5" fill="#4a3620" stroke="#ffb340" stroke-width="1.3"/>';
+      s += '<circle cx="' + (px2 + 13) + '" cy="' + cy + '" r="5" fill="#ff9a4d"/><circle cx="' + (px2 + 13) + '" cy="' + cy + '" r="9.5" fill="#ff9a4d" opacity="0.3"/>';
+    });
+  } else if (d.weapon === "starlance") {
+    s += '<polygon points="' + (x0 + L * 0.2) + ',' + (cy - 5) + ' ' + (x1 + 14) + ',' + cy + ' ' + (x0 + L * 0.2) + ',' + (cy + 5) + '" fill="#dfe9ff"/>';
+    s += '<polygon points="' + (x0 + L * 0.2) + ',' + (cy - 2) + ' ' + (x1 + 14) + ',' + cy + ' ' + (x0 + L * 0.2) + ',' + (cy + 2) + '" fill="#5ff2ff"/>';
+    [0.3, 0.48, 0.66].forEach(function (f) { s += '<rect x="' + (x0 + L * f) + '" y="' + (cy - 9) + '" width="6" height="18" rx="2.5" fill="#ffb340"/>'; });
+  } else {
+    s += '<text x="' + cx + '" y="' + (cy + 46) + '" text-anchor="middle" font-size="11" fill="#93a5c0" font-family="Rajdhani" font-weight="600">CARGO FIT — UNARMED</text>';
+  }
+  return '<svg viewBox="0 0 420 160" width="' + (w || "100%") + '" role="img" aria-label="Ship preview">' + s + '</svg>';
+}
+/* ================= RENDER ================= */
+function render() {
+  renderHud(); renderNav(); renderBoard(); renderRivals(); renderMap(); renderSectorDetail(); renderMarket();
+  renderDesigner(); renderBlueprints(); renderYards(); renderStock(); renderContracts(); renderNews();
+  renderPersonnel(); renderResearch(); renderLoan();
+}
+var VIEWS = [
+  { id: "board", name: "Boardroom" }, { id: "design", name: "Design Office" }, { id: "factory", name: "Assembly" },
+  { id: "sales", name: "Sales & Marketing" }, { id: "personnel", name: "Personnel" }, { id: "research", name: "Research Lab" }
+];
+function renderNav() {
+  var counts = {
+    board: "", design: ' <span class="cnt">' + S.blueprints.length + ' designs</span>',
+    factory: ' <span class="cnt">' + S.yards.length + ' yard' + (S.yards.length === 1 ? "" : "s") + '</span>',
+    sales: ' <span class="cnt">' + S.stock.length + ' in stock · ' + (S.offers.length + S.active.length) + ' contracts</span>',
+    personnel: ' <span class="cnt">' + Object.keys(ROLES).filter(function (r) { return S.managers[r]; }).length + '/4 staffed</span>',
+    research: ' <span class="cnt">' + Math.floor(S.rp) + ' RP</span>'
+  };
+  $("deptNav").innerHTML = VIEWS.map(function (v) {
+    return '<button data-view="' + v.id + '"' + (ui.view === v.id ? ' class="on"' : "") + '>' + v.name + (counts[v.id] || "") + '</button>';
+  }).join("");
+  Array.prototype.forEach.call($("deptNav").querySelectorAll("[data-view]"), function (b) {
+    b.onclick = function () {
+      ui.view = b.getAttribute("data-view");
+      VIEWS.forEach(function (v) { $("view-" + v.id).classList.toggle("active", v.id === ui.view); });
+      renderNav();
+    };
+  });
+}
+function renderHud() {
+  var nw = netWorth(), d = dateOf();
+  $("hud").innerHTML =
+    '<span class="brand">Hull &amp; Havoc</span>' +
+    '<span class="ver-badge" title="Game version">' + fmtVer(GAME_VERSION) + '</span>' +
+    '<span class="res"><small>Firm</small> Corvane Consolidated Yards</span>' +
+    '<span class="week">Week ' + d.wk + ' · ' + d.year + '</span>' +
+    '<span class="res' + (S.credits < 0 ? " neg" : "") + '"><small>Credits</small> ' + fmt(S.credits) + '</span>' +
+    '<span class="res"><small>Alloy</small> ' + S.alloy + '</span>' +
+    '<span class="res"><small>Components</small> ' + S.components + '</span>' +
+    '<span class="res"><small>Research</small> ' + Math.floor(S.rp) + ' RP</span>' +
+    '<span class="res"><small>Net worth</small> ' + fmt(nw) + ' / ' + fmt(60000) + '</span>' +
+    '<span class="spacer"></span>' +
+    '<button class="endweek" id="btnEndWeek">End Week ▸</button>';
+  $("btnEndWeek").onclick = endWeek;
+}
+function renderBoard() {
+  var d = dateOf(), era = eraOf(d.year), nw = netWorth();
+  $("boardTag").textContent = dateLabel() + " · charter to " + CHARTER_END_YEAR;
+  var lm = S.lastWeek;
+  var html = '<div class="era"><div class="era-name">' + era.name + ' — ' + d.year + '</div><div class="small">' + era.note + '</div></div>';
+  html += '<div class="headline"><small>The Corvane Gazette — ' + dateLabel() + '</small>' + esc(S.lastHeadline || "SHIPWRIGHTS' GUILD FORMED AT CORVANE — A NEW YARD ENTERS THE TRADE") + '</div>';
+  html += '<dl class="kv">' +
+    '<dt>Net worth</dt><dd>' + fmt(nw) + ' of ' + fmt(60000) + ' goal<div class="goalbar"><i style="width:' + clamp(nw / 600, 0, 100) + '%"></i></div></dd>' +
+    '<dt>Fleet position</dt><dd>' + S.stock.length + ' ships in stock · ' + S.transit.length + ' in transit · ' + S.yards.length + ' yard(s) · ' + Object.keys(S.hubs).length + ' dealership(s)</dd>' +
+    '<dt>Order book</dt><dd>' + S.active.length + ' active contract(s) · ' + S.offers.length + ' offer(s) waiting in Sales</dd>' +
+    '<dt>Technology</dt><dd>' + Object.keys(S.tech).length + ' of ' + TECHS.length + ' advances fielded · lab budget ' + fmt(S.resBudget) + '/wk</dd>' +
+    '<dt>Staff</dt><dd>' + Object.keys(ROLES).map(function (r) { return ROLES[r].name + ": " + (S.managers[r] ? S.managers[r].name + " " + stars(S.managers[r].skill) : "<em>vacant</em>"); }).join(" · ") + '</dd>' +
+    (S.econ.left > 0 ? '<dt>Economy</dt><dd>' + (S.econ.war ? "War demand " + (S.econ.war > 0 ? "+" : "") + S.econ.war + " · " : "") + (S.econ.trade ? "Trade demand " + (S.econ.trade > 0 ? "+" : "") + S.econ.trade + " · " : "") + S.econ.left + ' week(s) left of the current swing</dd>' : "") +
+    (S.pirates > 0 ? '<dt>Piracy</dt><dd>Pirate activity on the lanes for ' + S.pirates + ' more week(s) — delivery risk is up.</dd>' : "") +
+    '</dl>';
+  if (lm) {
+    html += '<h3>Last week — ' + lm.label + '</h3><dl class="kv">' +
+      '<dt>Ships sold</dt><dd>' + lm.units + ' for ' + fmt(lm.revenue) + (lm.contractRevenue ? ' (incl. ' + fmt(lm.contractRevenue) + ' in contract deliveries)' : "") + '</dd>' +
+      '<dt>Market share</dt><dd>' + lm.share + '% of galactic ship revenue</dd>' +
+      '<dt>Outgoings</dt><dd>' + fmt(lm.expenses) + ' — wages ' + fmt(lm.expWages) + ' · upkeep ' + fmt(lm.expUpkeep) + ' · staff ' + fmt(lm.expStaff) + ' · advertising ' + fmt(lm.expMkt) + ' · research ' + fmt(lm.expRes) + (lm.expLoan ? ' · loan ' + fmt(lm.expLoan) : '') + '</dd>' +
+      '<dt>Production</dt><dd>' + (lm.produced.length ? lm.produced.join("; ") : "No completions.") + '</dd></dl>';
+  } else {
+    html += '<p class="muted small">No week has closed yet. Design a ship in the Design Office, lay its keel in Assembly, and stock the Corvane dealership — the first Weekly Report lands when you end the week.</p>';
+  }
+  html += '<dl class="kv"><dt>Reputation</dt><dd>' + S.rep + ' / 100 — buyers' + (S.rep >= 60 ? ' lean in: your name carries a premium at the showroom.' : S.rep <= 40 ? ' haggle hard: the name is not helping you.' : ' treat you as an honest yard, no more.') + (S.trophies.length ? '<br>Trophies: ' + S.trophies.map(function (t) { return t.cat + ' ' + t.year + ' (' + esc(t.model) + ')'; }).join(' · ') : '<br>No Expo trophies yet — the first Galactic Expo judges in ' + dateLabel(53) + '.') + '</dd>' +
+    (S.loan ? '<dt>Loan desk</dt><dd>Balance ' + fmt(S.loan.balance) + ' · payment ' + fmt(S.loan.payment) + '/wk · ' + S.loan.label + '</dd>' : '') +
+    '<dt>Patents</dt><dd>' + (Object.keys(S.patents).length ? Object.keys(S.patents).map(function (id) { return techById(id).name; }).join(' · ') + ' — earning ' + fmt(Object.keys(S.patents).length * 9) + '/wk in licensing' : 'None held yet. First to finish a tech patents it — see the Research Lab.') + '</dd></dl>';
+  html += timelineHtml();
+  $("boardMain").innerHTML = html;
+}
+function shareRow(label, rev, total, you) {
+  var pct = total > 0 ? Math.round(rev / total * 100) : 0;
+  return '<div class="sharebar' + (you ? " you" : "") + '"><span>' + esc(label) + '</span><span class="track"><i style="width:' + pct + '%"></i></span><span>' + pct + '%</span></div>';
+}
+function renderRivals() {
+  var total = S.cumPlayerRev + S.rivals.reduce(function (a, r) { return a + r.cumRev; }, 0);
+  var html = "";
+  if (!total) html += '<p class="muted small">No firm has booked a sale yet. The first week\'s report will set the table.</p>';
+  html += shareRow("Corvane Consolidated (you)", S.cumPlayerRev, total, true);
+  S.rivals.forEach(function (r) { html += shareRow(r.name, r.cumRev, total, false); });
+  html += '<table class="report" style="margin-top:10px"><tr><th>Rival</th><th class="num">Last wk.</th><th class="num">Revenue</th><th class="num">All-time</th></tr>' +
+    S.rivals.map(function (r) {
+      return '<tr><td>' + esc(r.name) + '<div class="muted small" style="font-weight:600">' + esc(r.style) + '</div></td><td class="num">' + r.lastUnits + ' ships</td><td class="num">' + fmt(r.lastRev) + '</td><td class="num">' + fmt(r.cumRev) + '</td></tr>';
+    }).join("") + '</table>';
+  html += '<p class="muted small" style="margin-top:8px">Your all-time revenue: <strong>' + fmt(S.cumPlayerRev) + '</strong>. Share is revenue share — premium hulls punch above their unit count, exactly as Detroit taught Detroit.</p>';
+  html += '<h3 style="margin-top:12px">Scout reports — rival spec sheets</h3>' + S.rivals.map(function (r, i) { return rivalScoutHtml(r, i); }).join("");
+  $("rivals").innerHTML = html;
+  Array.prototype.forEach.call($("rivals").querySelectorAll("[data-scout]"), function (b) {
+    b.onclick = function () { buyScout(Number(b.getAttribute("data-scout"))); };
+  });
+}
+function renderNews() {
+  $("newsLog").innerHTML = S.news.map(function (n) {
+    return '<li><span class="wk">' + dateShort(n.turn) + '</span>' + esc(n.text) + '</li>';
+  }).join("");
+}
+
+/* ================= GALAXY STAR CHART ================= */
+var GAL_POS = { aurel: [72, 56], kharun: [170, 40], talon: [264, 62], dusk: [352, 42], corvane: [54, 148], meridian: [162, 136], vant: [260, 150], sable: [350, 130], ithra: [68, 238], ossian: [160, 226], greywater: [254, 240], emberfall: [346, 220] };
+var LANES = [["aurel","kharun"],["kharun","talon"],["talon","dusk"],["aurel","corvane"],["kharun","meridian"],["talon","vant"],["dusk","sable"],["corvane","meridian"],["meridian","vant"],["vant","sable"],["corvane","ithra"],["meridian","ossian"],["vant","greywater"],["sable","emberfall"],["ithra","ossian"],["ossian","greywater"],["greywater","emberfall"],["aurel","meridian"],["vant","dusk"]];
+var STATUS_COL = { war: "#ff5d5d", tension: "#ffc95e", peace: "#5fd68a" };
+function starField() {
+  var seed = 1234567, out = "";
+  function next() { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; }
+  for (var i = 0; i < 130; i++) {
+    var x = (next() * 400).toFixed(1), y = (next() * 290).toFixed(1), r = (0.5 + next() * 1.1).toFixed(2), o = (0.25 + next() * 0.65).toFixed(2);
+    var col = next() > 0.82 ? "#ffe9c4" : next() > 0.5 ? "#cfe3ff" : "#ffffff";
+    out += '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="' + col + '" opacity="' + o + '"/>';
+  }
+  for (var j = 0; j < 7; j++) {
+    out += '<circle cx="' + (next() * 400).toFixed(1) + '" cy="' + (next() * 290).toFixed(1) + '" r="2" fill="#ffffff" opacity="0.9"/>';
+  }
+  return out;
+}
+function renderMap() {
+  var svg = '<svg class="galaxy" viewBox="0 0 400 290" role="group" aria-label="Galaxy star chart — choose a sector">' +
+    '<defs>' +
+    '<radialGradient id="nebTeal" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#1d7a78" stop-opacity="0.5"/><stop offset="100%" stop-color="#1d7a78" stop-opacity="0"/></radialGradient>' +
+    '<radialGradient id="nebBlue" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#2b4a7a" stop-opacity="0.55"/><stop offset="100%" stop-color="#2b4a7a" stop-opacity="0"/></radialGradient>' +
+    '<radialGradient id="nebAmber" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#8a5a1d" stop-opacity="0.4"/><stop offset="100%" stop-color="#8a5a1d" stop-opacity="0"/></radialGradient>' +
+    '</defs>' +
+    '<rect x="0" y="0" width="400" height="290" fill="#04070e"/>' +
+    '<ellipse cx="120" cy="90" rx="150" ry="95" fill="url(#nebTeal)"/>' +
+    '<ellipse cx="300" cy="200" rx="160" ry="100" fill="url(#nebBlue)"/>' +
+    '<ellipse cx="330" cy="60" rx="110" ry="70" fill="url(#nebAmber)"/>' +
+    starField();
+  LANES.forEach(function (pr) {
+    var a = GAL_POS[pr[0]], b = GAL_POS[pr[1]];
+    svg += '<line x1="' + a[0] + '" y1="' + a[1] + '" x2="' + b[0] + '" y2="' + b[1] + '" stroke="#3a5a8c" stroke-width="1" stroke-dasharray="3 4" opacity="0.65"/>';
+  });
+  SECTOR_DEFS.forEach(function (d) {
+    var sec = S.sectors[d.id], p = GAL_POS[d.id], col = STATUS_COL[sec.status], sel = ui.sector === sec.id;
+    var marks = [];
+    if (S.yards.some(function (y) { return y.sector === sec.id; })) marks.push("YARD");
+    if (S.hubs[sec.id]) marks.push("DEALER");
+    var nStock = S.stock.filter(function (sh) { return sh.sector === sec.id; }).length;
+    if (nStock) marks.push(nStock + " SHIP" + (nStock > 1 ? "S" : ""));
+    if (sec.surge) marks.push("SURGE");
+    svg += '<g class="gnode' + (sel ? " sel" : "") + '" data-sector-g="' + sec.id + '" tabindex="0" role="button" aria-label="' + esc(sec.name) + ', ' + sec.status + (sel ? ", selected" : "") + '">' +
+      (sec.surge ? '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="21" fill="none" stroke="#ffc95e" stroke-width="1" stroke-dasharray="4 3" opacity="0.8"/>' : "") +
+      '<circle class="halo' + (sec.status === "war" ? " halo-war" : "") + '" cx="' + p[0] + '" cy="' + p[1] + '" r="17" fill="' + col + '" opacity="' + (sel ? 0.5 : 0.3) + '"/>' +
+      (sel ? '<circle class="ring" cx="' + p[0] + '" cy="' + p[1] + '" r="12.5" fill="none" stroke="#ffb340" stroke-width="1.8"/>' : '<circle class="ring" cx="' + p[0] + '" cy="' + p[1] + '" r="12.5" fill="none" stroke="#ffb340" stroke-width="1.8" opacity="0"/>') +
+      '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="6.5" fill="' + col + '" stroke="#04070e" stroke-width="1.5"/>' +
+      '<circle cx="' + (p[0] - 1.8) + '" cy="' + (p[1] - 1.8) + '" r="2.1" fill="#ffffff" opacity="0.9"/>' +
+      '<text class="glabel" x="' + p[0] + '" y="' + (p[1] + 27) + '" text-anchor="middle" font-size="11.5">' + esc(sec.name) + '</text>' +
+      (marks.length ? '<text class="gsub" x="' + p[0] + '" y="' + (p[1] + 39) + '" text-anchor="middle" font-size="7.5">' + marks.join(" · ") + '</text>' : "") +
+      '</g>';
+  });
+  svg += '</svg>';
+  $("map").innerHTML = svg;
+  var warCount = Object.values(S.sectors).filter(function (x) { return x.status === "war"; }).length;
+  $("mapTag").textContent = warCount + " sector" + (warCount === 1 ? "" : "s") + " at war · tap a star system";
+  function choose(id) { ui.sector = id; renderMap(); renderSectorDetail(); }
+  Array.prototype.forEach.call($("map").querySelectorAll("[data-sector-g]"), function (g) {
+    g.addEventListener("click", function () { choose(g.getAttribute("data-sector-g")); });
+    g.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); choose(g.getAttribute("data-sector-g")); } });
+  });
+}
+function demandRow(label, val, color) {
+  return '<dt>' + label + '</dt><dd class="demandcell"><span class="demandbar"><i style="width:' + clamp(val / 1.3, 0, 100) + '%;background:' + color + '"></i></span><span class="dval">' + val + '</span></dd>';
+}
+function renderSectorDetail() {
+  var sec = sectorById(ui.sector);
+  var dem = demandOf(sec);
+  var hasYard = S.yards.some(function (y) { return y.sector === sec.id; });
+  var specName = { trade: "Trade crossroads", mining: "Ore mining", refinery: "Component refineries", agri: "Agricultural worlds", shipyard: "Shipyard tradition", none: "—" }[sec.specialty];
+  var specNote = {
+    trade: "Freighters fetch strong prices here.", mining: "A shipyard here produces +6 alloy every week.",
+    refinery: "A shipyard here produces +4 components every week.", agri: "A shipyard here earns +₡100/wk in food-freight work.",
+    shipyard: "Local crews build 1 week faster (minimum 1).", none: ""
+  }[sec.specialty];
+  var exampleWar = designStats({ size: "frigate", hull: "wedge", engine: "standard", weapon: "turbo", name: "" });
+  var exampleFree = designStats({ size: "corvette", hull: "hauler", engine: "standard", weapon: "none", name: "" });
+  var stockHere = S.stock.filter(function (sh) { return sh.sector === sec.id; }).length;
+  var mkt = S.marketing[sec.id] || 0;
+  var html = '<h3>' + esc(sec.name) + '</h3>' +
+    '<div class="muted small">' + esc(sec.desc) + '</div>' +
+    '<dl class="kv">' +
+    '<dt>Faction</dt><dd>' + FACTIONS[sec.faction] + '</dd>' +
+    '<dt>Status</dt><dd><span class="badge ' + sec.status + '">' + sec.status + '</span>' + (sec.surge ? ' <span class="pill">' + sec.surge.type + ' surge — ' + sec.surge.weeks + ' wk left</span>' : '') + '</dd>' +
+    '<dt>Specialty</dt><dd>' + specName + (specNote ? ' <span class="muted">(' + specNote + ')</span>' : '') + '</dd>' +
+    demandRow("War demand", dem.war, "var(--red)") +
+    demandRow("Trade demand", dem.trade, "var(--amber)") +
+    '<dt>Typical prices</dt><dd>Lance-battery frigate ≈ ' + fmt(marketPrice(sec, exampleWar)) + ' · Light freighter ≈ ' + fmt(marketPrice(sec, exampleFree)) + ' <span class="muted">(market level — your ships sell at your asking price)</span></dd>' +
+    '<dt>Showroom</dt><dd>' + (S.hubs[sec.id] ? 'Dealership open — stock here sells every week (' + stockHere + ' in stock)' : 'No dealership — only passing brokers buy here, a trickle') + '</dd>' +
+    '<dt>Delivery risk</dt><dd>' + riskAt(sec) + '% chance a delivery is lost here' + (S.hubs[sec.id] ? ' (dealership escorts halve risk)' : '') + '</dd>' +
+    '<dt>Advertising</dt><dd><select id="mktSel" style="width:auto">' +
+      [0, 50, 125, 250].map(function (v) { return '<option value="' + v + '"' + (mkt === v ? " selected" : "") + '>' + (v === 0 ? "No advertising" : fmt(v) + " / week") + '</option>'; }).join("") +
+      '</select> <span class="muted small">Ads pull extra buyers into this sector\'s showrooms.</span></dd>' +
+    '</dl><div class="btnrow">';
+  if (!hasYard) html += '<button class="btn primary" id="btnBuildYard" ' + (S.credits < 6000 ? "disabled" : "") + '>Build shipyard — ' + fmt(6000) + '</button>';
+  else html += '<span class="pill free">Shipyard operational</span>';
+  if (!S.hubs[sec.id]) html += '<button class="btn" id="btnBuildHub" ' + (S.credits < 2500 ? "disabled" : "") + '>Open dealership — ' + fmt(2500) + '</button>';
+  else html += '<span class="pill free">Dealership active</span>';
+  html += '</div>';
+  $("sectorDetail").innerHTML = html;
+  var by = $("btnBuildYard"); if (by) by.onclick = function () { buildYard(sec.id); };
+  var bh = $("btnBuildHub"); if (bh) bh.onclick = function () { buildHub(sec.id); };
+  $("mktSel").onchange = function () { S.marketing[sec.id] = Number(this.value); flash("Advertising in " + sec.name + " set to " + fmt(S.marketing[sec.id]) + " per week."); renderHud(); };
+}
+function renderMarket() {
+  $("market").innerHTML =
+    '<span class="mkt">Alloy <strong>' + fmt(S.prices.alloy) + '/unit</strong>' +
+    '<button class="btn mini" id="buyAlloy">Buy 10</button><button class="btn mini" id="sellAlloy" ' + (S.alloy < 10 ? "disabled" : "") + '>Sell 10</button></span>' +
+    '<span class="mkt">Components <strong>' + fmt(S.prices.comp) + '/unit</strong>' +
+    '<button class="btn mini" id="buyComp">Buy 10</button><button class="btn mini" id="sellComp" ' + (S.components < 10 ? "disabled" : "") + '>Sell 10</button></span>' +
+    '<span class="muted small">Prices drift weekly. Mining and refinery yards feed themselves for free.</span>';
+  $("buyAlloy").onclick = function () { tradeRes("alloy", 10, 1); };
+  $("sellAlloy").onclick = function () { tradeRes("alloy", 10, -1); };
+  $("buyComp").onclick = function () { tradeRes("comp", 10, 1); };
+  $("sellComp").onclick = function () { tradeRes("comp", 10, -1); };
+}
+/* ================= DESIGNER ================= */
+function fillPart(el, obj, val, kind) {
+  el.innerHTML = Object.keys(obj).map(function (k) {
+    var lock = kind ? partLocked(kind, k) : null;
+    var t = lock ? TECHS.filter(function (x) { return x.id === lock; })[0] : null;
+    return '<option value="' + k + '"' + (k === val ? " selected" : "") + (lock ? " disabled" : "") + '>' + obj[k].name + (lock ? " — research: " + t.name.split(" — ")[0] + " (" + t.year + ")" : "") + '</option>';
+  }).join("");
+  el.value = val;
+}
+function renderDesigner() {
+  var d = ui.design;
+  fillPart($("selSize"), SIZES, d.size, "size");
+  fillPart($("selHull"), HULLS, d.hull, "hull");
+  fillPart($("selEngine"), ENGINES, d.engine, "engine");
+  fillPart($("selWeapon"), WEAPONS, d.weapon, "weapon");
+  if ($("inpDesignName").value !== d.name) $("inpDesignName").value = d.name;
+  var st = designStats(d);
+  $("shipSvg").innerHTML = shipSvg(d);
+  var price = d.price == null ? st.value : d.price;
+  var appeal = d.appeal == null ? 100 : d.appeal;
+  var exactMatch = null;
+  if (d.name && d.name.trim()) {
+    S.blueprints.forEach(function (bp) {
+      if (bp.name === d.name && (bp.ver == null ? GAME_VERSION : bp.ver) === (d.ver == null ? GAME_VERSION : d.ver) && bp.size === d.size && bp.hull === d.hull && bp.engine === d.engine && bp.weapon === d.weapon &&
+          (bp.price == null ? designStats(bp).value : bp.price) === price && (bp.appeal == null ? 100 : bp.appeal) === appeal) exactMatch = bp;
+    });
+  }
+  var previewVer = d.name && d.name.trim() ? nextVerFor(d.name) : GAME_VERSION;
+  var shownVer = exactMatch ? (exactMatch.ver == null ? GAME_VERSION : exactMatch.ver) : previewVer;
+  $("shipClassLine").textContent = (d.name || "Unnamed design") + " " + fmtVer(shownVer) + " — " + st.sizeName + " " + st.role;
+  var hint = $("saveVerHint");
+  if (!d.name || !d.name.trim()) hint.textContent = "Name it to save — a new name starts at " + fmtVer(GAME_VERSION) + ".";
+  else if (exactMatch) hint.textContent = "This is " + fmtVer(shownVer) + ", saved. Change a part, the price, or test-fly it and re-save to bump to " + fmtVer(previewVer) + ".";
+  else hint.textContent = "Saving as “" + d.name.trim() + "” will create " + fmtVer(previewVer) + (previewVer === GAME_VERSION ? " — the first version of this line." : " — the next version in this line.");
+  function row(label, val, max, cls) {
+    return '<div class="statrow"><span>' + label + '</span><span class="bar"><i class="' + cls + '" style="width:' + clamp(val / max * 100, 2, 100) + '%"></i></span><span>' + val + '</span></div>';
+  }
+  $("statRows").innerHTML = row("Firepower", st.fire, 22, "fire") + row("Speed", st.speed, 14, "") + row("Cargo", st.cargo, 18, "cargo") +
+    '<div class="statrow"><span>Build time</span><span></span><span>' + st.weeks + ' wk</span></div>' +
+    '<div class="statrow"><span>Appeal</span><span class="bar"><i style="width:' + clamp(appeal / 1.3, 2, 100) + '%;background:var(--amber)"></i></span><span>' + appeal + '</span></div>';
+  $("costLine").innerHTML =
+    '<span>Version <span class="ver-chip">' + fmtVer(shownVer) + '</span></span>' +
+    '<span>Build cost ' + fmt(st.cr) + '</span>' +
+    '<span class="' + (S.alloy < st.alloy ? "over" : "") + '">Alloy ' + st.alloy + '</span>' +
+    '<span class="' + (S.components < st.comp ? "over" : "") + '">Components ' + st.comp + '</span>' +
+    '<span>Market value ' + fmt(st.value) + '</span>';
+  var pct = Math.round(price / st.value * 100);
+  var margin = price - st.cr;
+  $("priceBox").innerHTML =
+    '<div class="prow"><span style="font-family:Orbitron,sans-serif;font-size:13px;letter-spacing:.06em">YOUR ASKING PRICE</span>' +
+    '<span>' + fmt(price) + ' <span class="muted">(' + pct + '% of market value)</span></span>' +
+    '<span class="' + (margin >= 0 ? "good" : "over") + '">Margin over build cost: ' + (margin >= 0 ? "+" : "−") + fmt(Math.abs(margin)).slice(0) + '</span></div>' +
+    '<input type="range" id="rngPrice" min="60" max="180" step="5" value="' + pct + '" aria-label="Asking price as percent of market value" />' +
+    '<div class="small muted">Detroit rules: the price is yours. At or under market value, showroom buyers queue. Push past ~125% and most walk away — unless the sector is desperate (check war demand in Sales). Every price change re-saved under the same name becomes a new version.</div>';
+  var rng = $("rngPrice");
+  rng.oninput = function () { ui.design.price = Math.round(st.value * Number(this.value) / 100); renderDesignerSoft(); };
+  var tb = $("testBox");
+  if (ui.test) {
+    tb.innerHTML = '<div class="row" style="display:flex;flex-wrap:wrap;gap:6px 16px;font-weight:700"><span>TEST FLIGHT — THE STARSHIP REVIEW</span>' +
+      '<span>Performance ' + ui.test.perf + '</span><span>Handling ' + ui.test.hand + '</span><span>Reliability ' + ui.test.rel + '</span>' +
+      '<span>Appeal set to ' + ui.test.appeal + '</span></div>' +
+      '<div class="quote" style="margin-top:6px">“' + ui.test.quote + '” — The Starship Review, ' + dateLabel() + '</div>' +
+      '<div class="small muted" style="margin-top:4px">Re-save the design to lock this tested spec in as a new version. Untested designs sit at appeal 100.</div>';
+  } else {
+    tb.innerHTML = '<div class="small"><strong>Test range:</strong> <span class="muted">No test flight on record for this spec. A ₡150 test flight puts the design in front of The Starship Review — a rave can lift appeal toward 128, a pan can drop it toward 70. Your Chief Designer\'s skill counts.</span></div>';
+  }
+}
+function renderDesignerSoft() { /* price slider drag: refresh numbers without rebuilding the slider */
+  var d = ui.design, st = designStats(d), price = d.price == null ? st.value : d.price;
+  renderDesigner();
+}
+function renderBlueprints() {
+  if (!S.blueprints.length) { $("blueprints").innerHTML = '<div class="empty">No blueprints saved. Design a ship and save it.</div>'; return; }
+  $("blueprints").innerHTML = S.blueprints.map(function (bp) {
+    var st = designStats(bp);
+    return '<div class="bp"><span class="nm">' + esc(bp.name) + '</span> <span class="ver-chip">' + fmtVer(bp.ver) + '</span>' +
+      '<span class="spec">' + st.sizeName + ' · ' + HULLS[bp.hull].name + ' · ' + ENGINES[bp.engine].name + ' · ' + WEAPONS[bp.weapon].name + '</span>' +
+      '<span class="spec">F' + st.fire + ' S' + st.speed + ' C' + st.cargo + ' · ' + st.weeks + 'wk · build ' + fmt(st.cr) + ' · <strong>asking ' + fmt(askingPrice(bp)) + '</strong> · appeal ' + appealOf(bp) + '</span>' +
+      '<span class="acts"><button class="btn mini" data-load="' + bp.id + '">Load</button>' +
+      '<button class="btn mini danger" data-del="' + bp.id + '">Delete</button></span></div>';
+  }).join("");
+  Array.prototype.forEach.call($("blueprints").querySelectorAll("[data-load]"), function (b) {
+    b.onclick = function () {
+      var bp = S.blueprints.filter(function (x) { return x.id === Number(b.getAttribute("data-load")); })[0];
+      ui.design = { size: bp.size, hull: bp.hull, engine: bp.engine, weapon: bp.weapon, name: bp.name, ver: bp.ver == null ? GAME_VERSION : bp.ver, price: bp.price == null ? null : bp.price, appeal: bp.appeal == null ? null : bp.appeal };
+      ui.test = null;
+      renderDesigner();
+    };
+  });
+  Array.prototype.forEach.call($("blueprints").querySelectorAll("[data-del]"), function (b) {
+    b.onclick = function () { S.blueprints = S.blueprints.filter(function (x) { return x.id !== Number(b.getAttribute("data-del")); }); render(); };
+  });
+}
+
+/* ================= THE LONG TECH TREE =================
+   Detroit's marching technology, stretched across the whole charter and
+   beyond: ~7,400 RP in total. At a well-funded lab's ~25-35 RP/week that is
+   a 20-30 year programme; at a shoestring budget it simply never finishes.
+   Early rungs are cheap — the first unlock lands inside the first year. */
+TECHS.length = 0;
+TECHS.push(
+  { id: "twin",    name: "Twin Drive Layout",           cost: 30,  year: 2708, req: null,       desc: "Unlocks Twin Drives: a balanced second engine block with a cargo bonus." },
+  { id: "flak",    name: "Flak Screen",                 cost: 35,  year: 2708, req: null,       desc: "Unlocks the Flak Screen: cheap defensive guns for hulls that would rather not fight." },
+  { id: "arrow",   name: "Arrow Hull — Streamlined Frame", cost: 45, year: 2708, req: null,    desc: "Unlocks the Arrow Hull: all speed, no wasted metal." },
+  { id: "bulwark", name: "Bulwark Hull — Armour Belt",  cost: 55,  year: 2709, req: null,       desc: "Unlocks the Bulwark Hull: slow, heavy, and very hard to argue with." },
+  { id: "pulse",   name: "Pulse Drives",                cost: 60,  year: 2709, req: null,       desc: "Unlocks Pulse Drives: a crisp step up from standard drives for everyday hulls." },
+  { id: "ion",     name: "Ion Sprint Drives",           cost: 70,  year: 2709, req: "pulse",    desc: "Unlocks Ion Sprint Drives: the fastest legal propulsion of the founding era." },
+  { id: "heavy",   name: "Heavy Haul Drives",           cost: 85,  year: 2710, req: null,       desc: "Unlocks Heavy Haul Drives: freight muscle for serious cargo work." },
+  { id: "ionc",    name: "Arc Cannons",                 cost: 95,  year: 2710, req: null,       desc: "Unlocks Arc Cannons: shield-hungry guns the fleets are beginning to demand." },
+  { id: "ways_frigate", name: "Frigate Ways",           cost: 150, year: 2710, req: null,       desc: "Unlocks the Frigate size class: the slipways, cranes, and crew doctrine for midweight hulls." },
+  { id: "missile", name: "Missile Pods",                cost: 140, year: 2711, req: null,       desc: "Unlocks Missile Pods: stand-off firepower, beloved of border fleets." },
+  { id: "autofab", name: "Automated Assembly",          cost: 150, year: 2711, req: null,       desc: "Robotic slipway gantries. Every build costs 15% fewer credits, forever." },
+  { id: "dealernet", name: "Holo-Showroom Network",     cost: 130, year: 2712, req: null,       desc: "Immersive showrooms in every dealership: 15% more buyers walk in, every week." },
+  { id: "spearhead", name: "Spearhead Hull",            cost: 175, year: 2712, req: "arrow",    desc: "Unlocks the Spearhead Hull: a long knife of a warship, built around its guns." },
+  { id: "rail",    name: "Rail Lance",                  cost: 190, year: 2712, req: "ionc",     desc: "Unlocks the Rail Lance: a coil-driven kinetic gun that out-ranges everything of its day." },
+  { id: "turbo",   name: "Heavy Lance Battery",         cost: 320, year: 2713, req: "ionc",     desc: "Unlocks the Heavy Lance Battery: capital-grade beam firepower, the arms race's signature weapon." },
+  { id: "shielded", name: "Shielded Convoy Doctrine",   cost: 240, year: 2714, req: null,       desc: "Escort doctrine and decoy drones: delivery risk is halved again on every lane." },
+  { id: "ways_capital", name: "Capital Ways",           cost: 400, year: 2714, req: "ways_frigate", desc: "Unlocks the Capital Ship size class: hulls that need their own weather system." },
+  { id: "comet",   name: "Comet Drives",                cost: 360, year: 2715, req: "ion",      desc: "Unlocks Comet Drives: green-flare sprint drives for couriers and raiders." },
+  { id: "titan",   name: "Titan Haul Drives",           cost: 340, year: 2715, req: "heavy",    desc: "Unlocks Titan Haul Drives: four-block freight drives for colony-scale cargo." },
+  { id: "plasma",  name: "Plasma Mortars",              cost: 450, year: 2717, req: "turbo",    desc: "Unlocks Plasma Mortars: short-range, hull-melting siege guns." },
+  { id: "bastion", name: "Bastion Hull",                cost: 480, year: 2718, req: "bulwark",  desc: "Unlocks the Bastion Hull: a fortress with engines, layered plate over plate." },
+  { id: "grandfab", name: "Grand Fabrication",          cost: 620, year: 2720, req: "autofab",  desc: "Whole-yard automation: builds cost a further 12% fewer credits." },
+  { id: "starlance", name: "Starlance Array",           cost: 720, year: 2721, req: "plasma",   desc: "Unlocks the Starlance Array: a spine-mounted beam that runs the length of the ship." },
+  { id: "aegis",   name: "Aegis Hull",                  cost: 680, year: 2722, req: "bastion",  desc: "Unlocks the Aegis Hull: Bastion plate wrapped in a projected shield shell." },
+  { id: "voidrunner", name: "Voidrunner Drives",        cost: 780, year: 2724, req: "comet",    desc: "Unlocks Voidrunner Drives: violet-flare drives at the edge of known physics." },
+  { id: "perpetual", name: "Perpetual Assembly Doctrine", cost: 950, year: 2727, req: "grandfab", desc: "The yards never truly stop: every assembly line runs 25% faster, forever." }
+);
+PART_TECH.size = { frigate: "ways_frigate", capital: "ways_capital" };
+PART_TECH.hull.spearhead = "spearhead"; PART_TECH.hull.bastion = "bastion"; PART_TECH.hull.aegis = "aegis";
+PART_TECH.engine.pulse = "pulse"; PART_TECH.engine.comet = "comet"; PART_TECH.engine.titan = "titan"; PART_TECH.engine.voidrunner = "voidrunner";
+PART_TECH.weapon.flak = "flak"; PART_TECH.weapon.rail = "rail"; PART_TECH.weapon.plasma = "plasma"; PART_TECH.weapon.starlance = "starlance";
+HULLS.spearhead = { name: "Spearhead Hull", fire: 3, speed: 2, cargo: 0, crMult: 1.2, alloy: 4, comp: 2 };
+HULLS.bastion = { name: "Bastion Hull", fire: 3, speed: -2, cargo: 4, crMult: 1.45, alloy: 12, comp: 4 };
+HULLS.aegis = { name: "Aegis Hull", fire: 4, speed: 0, cargo: 3, crMult: 1.6, alloy: 14, comp: 8 };
+ENGINES.pulse = { name: "Pulse Drives", fire: 0, speed: 2, cargo: 0, crMult: 1.08, alloy: 1, comp: 2 };
+ENGINES.comet = { name: "Comet Drives", fire: 0, speed: 5, cargo: 0, crMult: 1.45, alloy: 2, comp: 8 };
+ENGINES.titan = { name: "Titan Haul Drives", fire: 0, speed: -3, cargo: 6, crMult: 1.25, alloy: 5, comp: 3 };
+ENGINES.voidrunner = { name: "Voidrunner Drives", fire: 0, speed: 6, cargo: 1, crMult: 1.7, alloy: 4, comp: 14 };
+WEAPONS.flak = { name: "Flak Screen", fire: 2, crMult: 1.05, alloy: 1, comp: 1 };
+WEAPONS.rail = { name: "Rail Lance", fire: 6, crMult: 1.3, alloy: 5, comp: 4 };
+WEAPONS.plasma = { name: "Plasma Mortars", fire: 9, crMult: 1.5, alloy: 6, comp: 8 };
+WEAPONS.starlance = { name: "Starlance Array", fire: 11, crMult: 1.75, alloy: 8, comp: 12 };
+function techById(id) { for (var i = 0; i < TECHS.length; i++) if (TECHS[i].id === id) return TECHS[i]; return null; }
+function rpPerWeek() { return 1.5 + S.resBudget / 300 + mgrSkill("research") * 0.5; }
+/* Contracts respect researched size classes (replaces the earlier spawner). */
+function spawnOffer() {
+  var sec = pick(Object.values(S.sectors));
+  var warBias = sec.status === "war" ? 0.75 : sec.status === "tension" ? 0.5 : 0.25;
+  var isWar = Math.random() < warBias;
+  var sizePool = (isWar ? ["fighter", "corvette", "corvette", "frigate", "capital"] : ["corvette", "corvette", "frigate", "fighter"]).filter(function (k) { return !partLocked("size", k); });
+  if (!sizePool.length) sizePool = ["corvette"];
+  var sizeKey = pick(sizePool);
+  var count = sizeKey === "capital" ? 1 : ri(2, 4);
+  var openParts = { hulls: Object.keys(HULLS).filter(function (k) { return !partLocked("hull", k); }),
+                    engines: Object.keys(ENGINES).filter(function (k) { return !partLocked("engine", k); }),
+                    weapons: Object.keys(WEAPONS).filter(function (k) { return !partLocked("weapon", k); }) };
+  var template = isWar
+    ? { size: sizeKey, hull: pick(openParts.hulls), engine: pick(openParts.engines), weapon: pick(openParts.weapons.filter(function (k) { return k !== "none"; })) }
+    : { size: sizeKey, hull: pick(["hauler", "wedge", "bulwark"].filter(function (k) { return !partLocked("hull", k); })), engine: pick(openParts.engines), weapon: "none" };
+  var tst = designStats(template);
+  var req = { size: sizeKey };
+  if (isWar) req.minFire = Math.max(3, tst.fire - 3); else req.minCargo = Math.max(2, tst.cargo - 2);
+  S.offers.push({
+    id: uid(), faction: sec.faction, buyer: pick(CONTRACT_FLAVOR[sec.faction]),
+    sector: sec.id, req: req, count: count, delivered: 0,
+    perShip: Math.round(tst.value * 1.35), deadline: S.turn + ri(12, 24), isWar: isWar
+  });
+}
+/* ================= YARDS ================= */
+function lineSpeed(y) {
+  var base = y.workers < 30 ? 0.6 : y.workers <= 70 ? 1 : 1.35;
+  return base + mgrSkill("foreman") * 0.06 + (S.tech.perpetual ? 0.25 : 0);
+}
+function wageCost(y) { return y.workers * WAGES[y.wage].rate; }
+function buildWeeks(yard, bp) {
+  var st = designStats(bp);
+  var w = st.weeks + (bp.size !== yard.tooling ? 1 : 0);
+  if (sectorById(yard.sector).specialty === "shipyard") w -= 1;
+  return Math.max(1, w);
+}
+function renderYards() {
+  $("yardTag").textContent = S.yards.length + " yard" + (S.yards.length === 1 ? "" : "s") + " · wages and upkeep charged weekly";
+  $("yards").innerHTML = S.yards.map(function (y) {
+    var sec = sectorById(y.sector);
+    var html = '<div class="yard"><header><span class="nm">' + esc(y.name) + '</span>' +
+      '<span class="loc">' + esc(sec.name) + ' · Level ' + y.level + ' · tooled for ' + SIZES[y.tooling].name + 's · line pace ' + Math.round(lineSpeed(y) * 100) + '%</span>' +
+      (y.retool ? '<span class="pill war">RETOOLING — ' + y.retool.weeks + ' wk left</span>' : '') + '</header>';
+    html += '<div class="crewrow"><span><strong>Crew:</strong> ' + y.workers + '</span>' +
+      '<button class="btn mini" data-crew="' + y.id + ':-10">−10</button><button class="btn mini" data-crew="' + y.id + ':10">+10</button>' +
+      '<label class="small muted" for="wage-' + y.id + '">Pay</label><select id="wage-' + y.id + '" data-wage="' + y.id + '">' +
+      Object.keys(WAGES).map(function (k) { return '<option value="' + k + '"' + (y.wage === k ? " selected" : "") + '>' + WAGES[k].name + ' — ₡' + WAGES[k].rate + '/worker (' + WAGES[k].note + ')</option>'; }).join("") + '</select>' +
+      '<span class="muted small">Wage bill ' + fmt(wageCost(y)) + '/wk</span></div>';
+    y.slots.forEach(function (slot, i) {
+      html += '<div class="slot">';
+      if (y.retool) html += '<span class="muted">Assembly line ' + (i + 1) + ' — offline while the yard retools.</span>';
+      else if (slot) {
+        var pct = Math.round((slot.total - slot.left) / slot.total * 100);
+        html += '<div class="row"><strong>' + esc(slot.design.name) + '</strong> <span class="ver-chip">' + fmtVer(slot.design.ver) + '</span><span class="pill">' + designStats(slot.design).sizeName + '</span>' +
+          '<span class="muted">about ' + Math.max(1, Math.ceil(slot.left)) + ' of ' + slot.total + ' weeks remaining</span></div>' +
+          '<div class="prog"><i style="width:' + pct + '%"></i></div>';
+      } else {
+        html += '<div class="row"><select id="bp-' + y.id + '-' + i + '" aria-label="Blueprint for line ' + (i + 1) + '">' +
+          S.blueprints.map(function (bp) { return '<option value="' + bp.id + '">' + esc(bp.name) + ' ' + fmtVer(bp.ver) + ' (' + fmt(designStats(bp).cr) + ', ' + buildWeeks(y, bp) + ' wk)</option>'; }).join("") +
+          '</select><button class="btn primary mini" data-build="' + y.id + ':' + i + '">Lay keel</button></div>';
+      }
+      html += '</div>';
+    });
+    html += '<div class="btnrow">' +
+      '<select id="rt-' + y.id + '" style="width:auto" aria-label="Retool target">' + Object.keys(SIZES).filter(function (k) { return k !== y.tooling && !partLocked("size", k); }).map(function (k) { return '<option value="' + k + '">Retool to ' + SIZES[k].name + '</option>'; }).join("") + '</select>' +
+      '<button class="btn mini" data-retool="' + y.id + '" ' + (y.retool || S.credits < 800 ? "disabled" : "") + '>Retool — ' + fmt(800) + ', 1 wk offline</button>' +
+      '<button class="btn mini" data-upgrade="' + y.id + '" ' + (y.level >= 3 || S.credits < 4000 ? "disabled" : "") + '>' + (y.level >= 3 ? "Max level" : "Upgrade to Lv " + (y.level + 1) + " — " + fmt(4000)) + '</button>' +
+      '</div></div>';
+    return html;
+  }).join("");
+  Array.prototype.forEach.call($("yards").querySelectorAll("[data-build]"), function (b) {
+    b.onclick = function () { var p = b.getAttribute("data-build").split(":"); startBuild(Number(p[0]), Number(p[1])); };
+  });
+  Array.prototype.forEach.call($("yards").querySelectorAll("[data-retool]"), function (b) { b.onclick = function () { startRetool(Number(b.getAttribute("data-retool"))); }; });
+  Array.prototype.forEach.call($("yards").querySelectorAll("[data-upgrade]"), function (b) { b.onclick = function () { upgradeYard(Number(b.getAttribute("data-upgrade"))); }; });
+  Array.prototype.forEach.call($("yards").querySelectorAll("[data-crew]"), function (b) {
+    b.onclick = function () {
+      var p = b.getAttribute("data-crew").split(":");
+      var y = S.yards.filter(function (x) { return x.id === Number(p[0]); })[0];
+      y.workers = clamp(y.workers + Number(p[1]), 10, 120);
+      renderYards(); renderHud();
+    };
+  });
+  Array.prototype.forEach.call($("yards").querySelectorAll("[data-wage]"), function (sel) {
+    sel.onchange = function () {
+      var y = S.yards.filter(function (x) { return x.id === Number(sel.getAttribute("data-wage")); })[0];
+      y.wage = sel.value; flash(y.name + " crews now on " + WAGES[y.wage].name.toLowerCase() + " — quality " + Math.round(WAGES[y.wage].quality * 100) + "%, wage bill " + fmt(wageCost(y)) + "/wk."); renderYards();
+    };
+  });
+}
+/* ================= STOCK & TRANSIT ================= */
+function renderStock() {
+  var html = "";
+  if (!S.stock.length) html += '<div class="empty">No finished ships in stock. Lay a keel in Assembly.</div>';
+  S.stock.forEach(function (sh) {
+    var sec = sectorById(sh.sector);
+    var st = designStats(sh.design);
+    var ask = Math.round(askingPrice(sh.design) * (sh.quality || 1));
+    var destOpts = SECTOR_DEFS.filter(function (d) { return d.id !== sh.sector; }).map(function (d) {
+      var ds = S.sectors[d.id];
+      var sel = ui.shipDest[sh.id] === d.id ? " selected" : "";
+      return '<option value="' + d.id + '"' + sel + '>' + esc(ds.name) + ' — ' + transitWeeks(sec, ds) + ' wk · risk ' + riskAt(ds) + '%</option>';
+    }).join("");
+    html += '<div class="shipitem"><div class="row"><span style="width:118px;flex:0 0 118px">' + shipSvg(sh.design, "118") + '</span>' +
+      '<span><strong>' + esc(sh.design.name) + '</strong> <span class="ver-chip">' + fmtVer(sh.design.ver) + '</span><br>' +
+      '<span class="pill">' + st.sizeName + ' ' + st.role + '</span> <span class="muted">at ' + esc(sec.name) + (S.hubs[sh.sector] ? ' · in showroom' : ' · no dealership here') + '<br>Asking ' + fmt(ask) + ' · quality ' + Math.round((sh.quality || 1) * 100) + '% · appeal ' + appealOf(sh.design) + '</span></span></div>' +
+      '<div class="row" style="margin-top:6px"><select data-dest="' + sh.id + '" aria-label="Destination">' + destOpts + '</select>' +
+      '<button class="btn mini" data-broker="' + sh.id + '">Sell to broker — ' + fmt(Math.round(ask * 0.85)) + '</button>' +
+      '<button class="btn primary mini" data-launch="' + sh.id + '">Ship it ▸</button></div>' + refitRowHtml(sh) + '</div>';
+  });
+  $("stock").innerHTML = html;
+  var thtml = "";
+  if (!S.transit.length) thtml = '<div class="empty">No convoys in flight.</div>';
+  S.transit.forEach(function (t) {
+    thtml += '<div class="shipitem"><div class="row"><strong>' + esc(t.design.name) + '</strong> <span class="ver-chip">' + fmtVer(t.design.ver) + '</span>' +
+      '<span class="muted">→ ' + esc(sectorById(t.dest).name) + ' · arrives in ' + t.left + ' wk · ' + (t.contractId ? '<span class="pill free">CONTRACT — ' + fmt(t.expected) + '</span>' : 'will stock the showroom at asking ' + fmt(t.expected)) + '</span></div></div>';
+  });
+  $("transit").innerHTML = thtml;
+  Array.prototype.forEach.call($("stock").querySelectorAll("[data-dest]"), function (sel) { sel.onchange = function () { ui.shipDest[Number(sel.getAttribute("data-dest"))] = sel.value; }; });
+  Array.prototype.forEach.call($("stock").querySelectorAll("[data-launch]"), function (b) { b.onclick = function () { launchShip(Number(b.getAttribute("data-launch"))); }; });
+  Array.prototype.forEach.call($("stock").querySelectorAll("[data-broker]"), function (b) { b.onclick = function () { sellBroker(Number(b.getAttribute("data-broker"))); }; });
+  Array.prototype.forEach.call($("stock").querySelectorAll("[data-refit-eng]"), function (sel) { sel.onchange = function () { var id = Number(sel.getAttribute("data-refit-eng")); ui.refit[id] = ui.refit[id] || {}; ui.refit[id].engine = sel.value; renderStock(); }; });
+  Array.prototype.forEach.call($("stock").querySelectorAll("[data-refit-wep]"), function (sel) { sel.onchange = function () { var id = Number(sel.getAttribute("data-refit-wep")); ui.refit[id] = ui.refit[id] || {}; ui.refit[id].weapon = sel.value; renderStock(); }; });
+  Array.prototype.forEach.call($("stock").querySelectorAll("[data-refit-go]"), function (b) { b.onclick = function () { doRefit(Number(b.getAttribute("data-refit-go"))); }; });
+}
+function renderContracts() {
+  var html = "";
+  if (S.active.length) {
+    html += '<h3 style="margin-top:0">Active</h3>' + S.active.map(function (c) {
+      var left = c.deadline - S.turn;
+      return '<div class="contract"><div class="row"><strong>' + esc(c.buyer) + '</strong>' +
+        '<span class="pill ' + (left <= 2 ? "war" : "") + '">' + left + ' wk left</span>' +
+        '<span class="pill free">' + c.delivered + ' / ' + c.count + ' delivered</span></div>' +
+        '<div class="small muted">Deliver ' + c.count + ' × (' + reqText(c) + ') to <strong>' + esc(sectorById(c.sector).name) + '</strong> · ' + fmt(c.perShip) + ' per ship · total ' + fmt(c.perShip * c.count) + '</div></div>';
+    }).join("");
+  }
+  html += '<h3' + (S.active.length ? "" : ' style="margin-top:0"') + '>Offers</h3>';
+  if (!S.offers.length) html += '<div class="empty">No offers this week. New buyers post regularly.</div>';
+  html += S.offers.map(function (c) {
+    return '<div class="contract"><div class="row"><strong>' + esc(c.buyer) + '</strong>' +
+      '<span class="pill">' + FACTIONS[c.faction] + '</span></div>' +
+      '<div class="small muted">Wants ' + c.count + ' × (' + reqText(c) + ') delivered to <strong>' + esc(sectorById(c.sector).name) + '</strong> · ' + fmt(c.perShip) + ' per ship · deadline ' + dateLabel(c.deadline) + '</div>' +
+      '<div class="btnrow"><button class="btn mini primary" data-accept="' + c.id + '" ' + (S.active.length >= 3 ? "disabled" : "") + '>Accept contract</button>' +
+      (S.active.length >= 3 ? '<span class="muted small">Contract book full (3)</span>' : '') + '</div></div>';
+  }).join("");
+  $("contracts").innerHTML = html;
+  Array.prototype.forEach.call($("contracts").querySelectorAll("[data-accept]"), function (b) { b.onclick = function () { acceptContract(Number(b.getAttribute("data-accept"))); }; });
+}
+/* ================= PERSONNEL ================= */
+function renderPersonnel() {
+  var html = "";
+  Object.keys(ROLES).forEach(function (role) {
+    var m = S.managers[role];
+    html += '<div class="person"><div class="row"><strong>' + ROLES[role].name + '</strong>' +
+      (m ? '<span>' + esc(m.name) + '</span><span class="stars">' + stars(m.skill) + '</span><span class="muted small">' + fmt(m.salary) + '/wk · ' + ROLES[role].effect + (role === "designer" ? "appeal on tests" : role === "foreman" ? (m.skill * 6) + "% pace, +" + m.skill + "% quality" : role === "sales" ? (m.skill * 4) + "% buyers" : (m.skill * 2) + " RP/wk") + '</span>' +
+        '<span class="acts"><button class="btn mini danger" data-fire="' + role + '">Dismiss</button></span>'
+        : '<span class="muted">Vacant — the department runs itself, badly.</span>') + '</div></div>';
+  });
+  $("managers").innerHTML = html;
+  if (!S.pool.length) $("applicants").innerHTML = '<div class="empty">No applicants this week. The pool refreshes as the weeks pass.</div>';
+  else $("applicants").innerHTML = S.pool.map(function (c) {
+    return '<div class="person"><div class="row"><strong>' + esc(c.name) + '</strong><span class="pill">' + ROLES[c.role].name + '</span>' +
+      '<span class="stars">' + stars(c.skill) + '</span><span class="muted small">asks ' + fmt(c.salary) + '/wk</span>' +
+      '<span class="acts"><button class="btn mini primary" data-hire="' + c.id + '">Hire</button></span></div></div>';
+  }).join("");
+  Array.prototype.forEach.call($("managers").querySelectorAll("[data-fire]"), function (b) {
+    b.onclick = function () { var m = S.managers[b.getAttribute("data-fire")]; S.managers[b.getAttribute("data-fire")] = null; flash(m.name + " dismissed. The " + ROLES[b.getAttribute("data-fire")].name + " desk is empty."); render(); };
+  });
+  Array.prototype.forEach.call($("applicants").querySelectorAll("[data-hire]"), function (b) {
+    b.onclick = function () {
+      var idx = S.pool.findIndex(function (c) { return c.id === Number(b.getAttribute("data-hire")); });
+      if (idx < 0) return;
+      var c = S.pool.splice(idx, 1)[0];
+      var old = S.managers[c.role];
+      S.managers[c.role] = c;
+      flash(c.name + " hired as " + ROLES[c.role].name + " (" + stars(c.skill) + ", " + fmt(c.salary) + "/wk)" + (old ? " — " + old.name + " was let go." : "."));
+      render();
+    };
+  });
+}
+/* ================= RESEARCH ================= */
+function renderResearch() {
+  var year = dateOf().year;
+  $("resTag").textContent = Math.floor(S.rp) + " RP banked · +" + rpPerWeek().toFixed(1) + " RP/wk at current funding";
+  var totalCost = TECHS.reduce(function (a, t) { return a + t.cost; }, 0);
+  $("researchHead").innerHTML =
+    '<div class="btnrow" style="margin-top:0"><span><strong>Lab funding</strong></span>' +
+    '<select id="resBudgetSel" style="width:auto" aria-label="Weekly research budget">' +
+    [0, 75, 150, 300, 600].map(function (v) { return '<option value="' + v + '"' + (S.resBudget === v ? " selected" : "") + '>' + (v === 0 ? "No funding" : fmt(v) + " / week") + '</option>'; }).join("") + '</select>' +
+    '<span class="muted small">Research Lead adds ' + (mgrSkill("research") * 2) + ' RP/wk. Base facilities add 6.</span></div>' +
+    '<p class="small muted">The full tree runs to <strong>' + totalCost.toLocaleString("en-US") + ' RP</strong> — at a strong lab\'s pace that is a twenty-to-thirty-year programme, and the last rungs (Voidrunner Drives, the Perpetual Assembly Doctrine) belong to the 2720s. That is deliberate: Detroit\'s technology marched for a century, and so does this galaxy\'s. The first rungs are cheap — expect your first unlock inside the first year.</p>';
+  $("resBudgetSel").onchange = function () { S.resBudget = Number(this.value); renderResearch(); renderHud(); };
+  $("techGrid").innerHTML = TECHS.map(function (t) {
+    var owned = !!S.tech[t.id];
+    var eraLocked = year < t.year;
+    var reqLocked = t.req && !S.tech[t.req];
+    var cost = effCost(t); var afford = S.rp >= cost;
+    var status, btn = "";
+    if (owned) status = '<span class="pill free">IN SERVICE</span>' + (S.patents[t.id] ? ' <span class="pill free">PATENTED BY YOU — +₡9/WK LICENSING</span>' : ' <span class="pill">PATENT HELD BY A RIVAL</span>');
+    else if (eraLocked) status = '<span class="pill">ERA — FROM ' + t.year + '</span>';
+    else if (reqLocked) status = '<span class="pill war">REQUIRES ' + esc(techById(t.req).name.split(" — ")[0].toUpperCase()) + '</span>';
+    else if (S.rivalPatented[t.id]) status = '<span class="pill war">PATENTED BY ' + esc(S.rivalPatented[t.id].toUpperCase()) + ' — ' + cost + ' RP TO WORK AROUND</span>';
+    else status = '<span class="pill">' + cost + ' RP' + (S.patents[t.id] ? '' : ' · PATENT UNCLAIMED') + '</span>';
+    if (!owned && !eraLocked && !reqLocked) btn = '<span class="acts"><button class="btn mini primary" data-research="' + t.id + '" ' + (afford ? "" : "disabled") + '>Research</button></span>';
+    return '<div class="tech"><div class="row"><strong>' + esc(t.name) + '</strong>' + status + btn + '</div>' +
+      '<div class="small muted">' + esc(t.desc) + (t.req ? ' Builds on ' + esc(techById(t.req).name) + '.' : '') + '</div></div>';
+  }).join("");
+  Array.prototype.forEach.call($("techGrid").querySelectorAll("[data-research]"), function (b) {
+    b.onclick = function () {
+      var t = techById(b.getAttribute("data-research"));
+      if (!t || S.tech[t.id] || S.rp < effCost(t) || dateOf().year < t.year || (t.req && !S.tech[t.req])) return;
+      S.rp -= effCost(t); S.tech[t.id] = true;
+      if (!S.rivalPatented[t.id] && !S.patents[t.id]) { S.patents[t.id] = true; logNews("PATENT GRANTED: Corvane Consolidated patents " + t.name + ". Rival yards now pay ₡9/wk to build under licence."); flash("Patent granted on " + t.name + " — licensing income starts this week."); }
+      logNews("Research complete: " + t.name + ". The Design Office and the yards have the new drawings.");
+      flash("Researched: " + t.name + " — now available across the firm.");
+      render();
+    };
+  });
+}
+
+/* ================= ACTIONS ================= */
+function tradeRes(kind, n, dir) {
+  var price = kind === "alloy" ? S.prices.alloy : S.prices.comp;
+  if (dir > 0) {
+    if (S.credits < price * n) { flash("Not enough credits to buy " + n + " units.", true); return; }
+    S.credits -= price * n;
+    if (kind === "alloy") S.alloy += n; else S.components += n;
+    flash("Bought " + n + " " + (kind === "alloy" ? "alloy" : "components") + " for " + fmt(price * n) + ".");
+  } else {
+    var have = kind === "alloy" ? S.alloy : S.components;
+    if (have < n) { flash("Not enough in stock to sell.", true); return; }
+    if (kind === "alloy") S.alloy -= n; else S.components -= n;
+    S.credits += price * n;
+    flash("Sold " + n + " units for " + fmt(price * n) + ".");
+  }
+  render();
+}
+function buildYard(sectorId) {
+  if (S.credits < 6000) return;
+  S.credits -= 6000;
+  var sec = sectorById(sectorId);
+  S.yards.push({ id: uid(), name: sec.name + " Yards", sector: sectorId, level: 1, tooling: "corvette", slots: [null], retool: null, workers: 40, wage: "standard" });
+  logNews("New shipyard commissioned in " + sec.name + ", crewed by 40 on standard pay.");
+  flash("Shipyard built in " + sec.name + ". It comes tooled for Corvettes, crewed by 40.");
+  render();
+}
+function buildHub(sectorId) {
+  if (S.credits < 2500) return;
+  S.credits -= 2500;
+  S.hubs[sectorId] = true;
+  logNews("Dealership opened in " + sectorById(sectorId).name + " — showroom sales and escorted deliveries.");
+  flash("Dealership opened in " + sectorById(sectorId).name + ". Stock shipped here now sells week by week.");
+  render();
+}
+function startBuild(yardId, slotIdx) {
+  var yard = S.yards.filter(function (y) { return y.id === yardId; })[0];
+  var sel = $("bp-" + yardId + "-" + slotIdx);
+  if (!yard || !sel) return;
+  var bp = S.blueprints.filter(function (x) { return x.id === Number(sel.value); })[0];
+  if (!bp) { flash("Save a blueprint first.", true); return; }
+  var st = designStats(bp);
+  if (S.credits < st.cr || S.alloy < st.alloy || S.components < st.comp) {
+    flash("Not enough resources: needs " + fmt(st.cr) + ", " + st.alloy + " alloy, " + st.comp + " components.", true); return;
+  }
+  S.credits -= st.cr; S.alloy -= st.alloy; S.components -= st.comp;
+  var w = buildWeeks(yard, bp);
+  yard.slots[slotIdx] = { design: { name: bp.name, ver: bp.ver == null ? GAME_VERSION : bp.ver, size: bp.size, hull: bp.hull, engine: bp.engine, weapon: bp.weapon, price: bp.price == null ? null : bp.price, appeal: bp.appeal == null ? null : bp.appeal }, total: w, left: w };
+  flash("Keel laid: " + designLabel(bp) + " at " + yard.name + " — about " + w + " week" + (w > 1 ? "s" : "") + " at current pace" + (bp.size !== yard.tooling ? " (off-tooling penalty applied)" : "") + ".");
+  render();
+}
+function startRetool(yardId) {
+  var yard = S.yards.filter(function (y) { return y.id === yardId; })[0];
+  var sel = $("rt-" + yardId);
+  if (!yard || !sel || yard.retool || S.credits < 800) return;
+  if (yard.slots.some(function (x) { return !!x; })) { flash("Retooling needs empty lines — finish current builds first.", true); return; }
+  S.credits -= 800;
+  yard.retool = { target: sel.value, weeks: 1 };
+  flash(yard.name + " begins retooling to " + SIZES[sel.value].name + " class. Offline for 1 week.");
+  render();
+}
+function upgradeYard(yardId) {
+  var yard = S.yards.filter(function (y) { return y.id === yardId; })[0];
+  if (!yard || yard.level >= 3 || S.credits < 4000) return;
+  S.credits -= 4000;
+  yard.level += 1;
+  yard.slots.push(null);
+  flash(yard.name + " upgraded to level " + yard.level + " — a new assembly line is open.");
+  render();
+}
+function acceptContract(id) {
+  var idx = S.offers.findIndex(function (c) { return c.id === id; });
+  if (idx < 0 || S.active.length >= 3) return;
+  var c = S.offers.splice(idx, 1)[0];
+  S.active.push(c);
+  flash("Contract accepted: " + c.count + " ships for " + c.buyer + ", deliver to " + sectorById(c.sector).name + " by " + dateLabel(c.deadline) + ".");
+  render();
+}
+function sellBroker(shipId) {
+  var idx = S.stock.findIndex(function (x) { return x.id === shipId; });
+  if (idx < 0) return;
+  var sh = S.stock.splice(idx, 1)[0];
+  var price = Math.round(askingPrice(sh.design) * (sh.quality || 1) * 0.85);
+  S.credits += price;
+  logNews("Broker sale: " + designLabel(sh.design) + " moved at a discount in " + sectorById(sh.sector).name + " for " + fmt(price) + ".");
+  flash("Broker took " + designLabel(sh.design) + " for " + fmt(price) + " (85% of asking). The showroom would have done better — eventually.");
+  render();
+}
+function launchShip(shipId) {
+  var idx = S.stock.findIndex(function (x) { return x.id === shipId; });
+  if (idx < 0) return;
+  var sh = S.stock[idx];
+  var destId = ui.shipDest[shipId];
+  if (!destId) { var sel = document.querySelector('[data-dest="' + shipId + '"]'); destId = sel ? sel.value : null; }
+  if (!destId) return;
+  S.stock.splice(idx, 1);
+  var from = sectorById(sh.sector), to = sectorById(destId);
+  var contract = null;
+  for (var i = 0; i < S.active.length; i++) {
+    if (S.active[i].sector === destId && matchesContract(sh.design, S.active[i])) { contract = S.active[i]; break; }
+  }
+  var expected = contract ? contract.perShip : Math.round(askingPrice(sh.design) * (sh.quality || 1));
+  S.transit.push({ id: uid(), design: sh.design, quality: sh.quality || 1, dest: destId, left: transitWeeks(from, to), expected: expected, contractId: contract ? contract.id : null });
+  flash(designLabel(sh.design) + " launched toward " + to.name + " — " + transitWeeks(from, to) + " wk out" + (contract ? ", bound for the " + contract.buyer + " contract" : ", to stock the showroom there") + ".");
+  render();
+}
+function testFlight() {
+  if (S.credits < 150) { flash("A test flight costs ₡150 — the firm cannot cover it.", true); return; }
+  var d = ui.design, st = designStats(d);
+  var price = d.price == null ? st.value : d.price;
+  S.credits -= 150;
+  var perf = clamp(Math.round(st.speed * 6 + st.fire * 2 + rnd(-4, 6)), 5, 100);
+  var hand = clamp(Math.round(50 + st.speed * 4 - (d.size === "capital" ? 18 : d.size === "frigate" ? 8 : 0) + rnd(-5, 5)), 5, 100);
+  var rel = clamp(Math.round(62 + (d.hull === "bulwark" || d.hull === "bastion" || d.hull === "aegis" ? 14 : d.hull === "hauler" ? 8 : 4) - st.speed + rnd(-5, 5)), 5, 100);
+  var appeal = clamp(Math.round(78 + (st.speed - 5) * 2 + (st.cargo - 4) * 1.2 + (st.fire - 6) - (price / st.value - 1) * 30 + (perf + hand + rel - 150) / 6 + mgrSkill("designer") * 1.5 + rnd(-5, 5)), 70, 128);
+  var quote = appeal >= 115 ? "The new benchmark. Whatever the yards are doing, the rest of the galaxy should start copying it."
+    : appeal >= 104 ? "A thoroughly convincing ship — honest numbers, real pace, and a price the showroom can defend."
+    : appeal >= 95 ? "Competent, likeable, unspectacular. It will sell to people who read the spec sheet twice."
+    : appeal >= 85 ? "The test pilots filed their report and reached for kind words. There were not many."
+    : "Our pilots returned it early and walked back to the office in silence.";
+  ui.design.appeal = appeal;
+  ui.test = { perf: perf, hand: hand, rel: rel, appeal: appeal, quote: quote };
+  logNews("The Starship Review tested the " + (d.name || "unnamed design") + ": appeal " + appeal + ".");
+  flash("Test flight complete — The Starship Review sets this spec's appeal at " + appeal + ". Re-save to lock it in as a new version.");
+  renderDesigner(); renderHud();
+}
+/* ================= TURN ENGINE — one week ================= */
+function endWeek() {
+  if (S.over) return;
+  var closedLabel = dateLabel(S.turn);
+  var report = { label: closedLabel, lines: [], produced: [], salesByModel: {}, units: 0, revenue: 0, contractRevenue: 0,
+    expWages: 0, expUpkeep: 0, expStaff: 0, expMkt: 0, expRes: 0, expLoan: 0, licensing: 0, otherIncome: 0 };
+  S.turn += 1;
+
+  /* Era event for the new week */
+  var ev = ERA_EVENTS[S.turn];
+  if (ev) {
+    S.lastHeadline = ev.headline;
+    report.lines.push("HEADLINE: " + ev.headline + " — " + ev.text);
+    logNews(ev.headline + ".");
+    if (ev.econ) S.econ = { war: ev.econ.war, trade: ev.econ.trade, left: ev.econ.left };
+    if (ev.compShock) S.prices.comp = 110;
+    if (ev.pirates) S.pirates = ev.pirates;
+    if (ev.longQuiet) S.longQuietUntil = S.turn + ev.longQuiet;
+    if (ev.embargo) S.embargoUntil = S.turn + ev.embargo;
+  }
+
+  /* Market drift */
+  S.prices.alloy = Math.round(clamp(S.prices.alloy * rnd(0.92, 1.1), 25, 80));
+  S.prices.comp = Math.round(clamp(S.prices.comp * rnd(0.92, 1.1), 40, 115));
+
+  /* Retooling */
+  S.yards.forEach(function (y) {
+    if (y.retool) {
+      y.retool.weeks -= 1;
+      if (y.retool.weeks <= 0) {
+        y.tooling = y.retool.target; y.retool = null;
+        report.lines.push(y.name + " finished retooling — now tooled for " + SIZES[y.tooling].name + " class.");
+        logNews(y.name + " retooled to " + SIZES[y.tooling].name + " production.");
+      }
+    }
+  });
+
+  /* Production — lines advance at crew pace */
+  S.yards.forEach(function (y) {
+    if (y.retool) return;
+    var speed = lineSpeed(y);
+    y.slots = y.slots.map(function (slot) {
+      if (!slot) return null;
+      slot.left -= speed;
+      if (slot.left <= 0) {
+        var quality = Math.round(WAGES[y.wage].quality * (1 + mgrSkill("foreman") * 0.01) * 100) / 100;
+        S.stock.push({ id: uid(), design: slot.design, sector: y.sector, quality: quality });
+        report.produced.push(designLabel(slot.design) + " at " + y.name + " (quality " + Math.round(quality * 100) + "%)");
+        logNews(designLabel(slot.design) + " completed at " + y.name + ".");
+        return null;
+      }
+      return slot;
+    });
+  });
+
+  /* Convoys arrive */
+  var stillFlying = [];
+  S.transit.forEach(function (t) {
+    t.left -= 1;
+    if (t.left > 0) { stillFlying.push(t); return; }
+    var dest = sectorById(t.dest);
+    if (Math.random() * 100 < riskAt(dest)) {
+      report.lines.push("LOST: " + designLabel(t.design) + " was intercepted en route to " + dest.name + ". No payment. The lanes are dangerous.");
+      logNews(designLabel(t.design) + " lost to raiders near " + dest.name + ".");
+      if (t.contractId) report.lines.push("The lost hull was bound for a contract — a replacement must be delivered.");
+      return;
+    }
+    if (t.contractId) {
+      var c = S.active.filter(function (x) { return x.id === t.contractId; })[0];
+      if (c) {
+        S.credits += c.perShip; report.contractRevenue += c.perShip; report.revenue += c.perShip; report.units += 1;
+        c.delivered += 1;
+        report.lines.push("Contract delivery: " + designLabel(t.design) + " handed over to " + c.buyer + " at " + dest.name + " — +" + fmt(c.perShip) + " (" + c.delivered + "/" + c.count + ").");
+        logNews(c.buyer + " took delivery of a " + designLabel(t.design) + " at " + dest.name + ".");
+        if (c.delivered >= c.count) {
+          S.active = S.active.filter(function (x) { return x.id !== c.id; });
+          report.lines.push("CONTRACT COMPLETE: " + c.buyer + " is fully supplied. Your name travels well.");
+          logNews("Contract complete for " + c.buyer + ".");
+        }
+        return;
+      }
+    }
+    S.stock.push({ id: uid(), design: t.design, sector: t.dest, quality: t.quality || 1 });
+    report.lines.push("Arrived: " + designLabel(t.design) + " stocked at " + dest.name + (S.hubs[t.dest] ? " — the showroom takes it from here." : " — no dealership there, so only brokers will call."));
+  });
+  S.transit = stillFlying;
+
+  /* Dealership sales — Detroit's weekly showroom reckoning */
+  Object.values(S.sectors).forEach(function (sec) {
+    var here = S.stock.filter(function (sh) { return sh.sector === sec.id; });
+    if (!here.length) return;
+    var dem = demandOf(sec);
+    var soldHere = 0, revHere = 0;
+    ["Warship", "Freighter"].forEach(function (role) {
+      var pool = (role === "Warship" ? dem.war : dem.trade) / 150;
+      pool *= S.hubs[sec.id] ? 1 : 0.3;
+      pool *= 1 + (S.marketing[sec.id] || 0) / 500;
+      pool *= 1 + mgrSkill("sales") * 0.04;
+      if (S.tech.dealernet) pool *= 1.15;
+      var buyers = Math.min(5, Math.floor(pool) + (Math.random() < (pool % 1) ? 1 : 0));
+      var candidates = here.filter(function (sh) { return designStats(sh.design).role === role; })
+        .sort(function (a, b) { return appealOf(b.design) - appealOf(a.design); });
+      for (var b = 0; b < buyers && candidates.length; b++) {
+        var sh = candidates[0];
+        var st = designStats(sh.design);
+        var accept = clamp(1.25 - askingPrice(sh.design) / st.value + (appealOf(sh.design) - 100) / 200 + ((sh.quality || 1) - 1) + (S.rep - 50) / 500, 0.08, 0.97);
+        if (S.longQuietUntil && S.turn < S.longQuietUntil && askingPrice(sh.design) > st.value * 0.95) accept *= 0.25;
+        if (Math.random() < accept) {
+          var price = Math.round(askingPrice(sh.design) * (sh.quality || 1));
+          S.credits += price; report.revenue += price; report.units += 1; soldHere += 1; revHere += price;
+          var key = designLabel(sh.design);
+          if (!report.salesByModel[key]) report.salesByModel[key] = { units: 0, revenue: 0 };
+          report.salesByModel[key].units += 1; report.salesByModel[key].revenue += price;
+          S.stock = S.stock.filter(function (x) { return x.id !== sh.id; });
+          candidates.shift();
+        } else candidates.shift();
+      }
+    });
+    if (soldHere) report.lines.push(sec.name + (S.hubs[sec.id] ? " dealership" : " brokers") + " sold " + soldHere + " ship" + (soldHere > 1 ? "s" : "") + " for " + fmt(revHere) + ".");
+  });
+
+  /* Rivals report */
+  var rivalRevTotal = 0;
+  S.rivals.forEach(function (r) {
+    var eraFactor = 1 + (S.turn - 1) / 1200;
+    r.lastRev = Math.round(ri(1500, 3500) * eraFactor * rnd(0.85, 1.15));
+    r.lastUnits = Math.max(2, Math.round(r.lastRev / ri(2800, 5200)));
+    r.cumRev += r.lastRev; r.cumUnits += r.lastUnits;
+    rivalRevTotal += r.lastRev;
+  });
+  S.cumPlayerRev += report.revenue;
+  var share = (report.revenue + rivalRevTotal) > 0 ? Math.round(report.revenue / (report.revenue + rivalRevTotal) * 100) : 0;
+
+  /* Sector facility output */
+  S.yards.forEach(function (y) {
+    var sec = sectorById(y.sector);
+    if (sec.specialty === "mining") { S.alloy += 6; report.lines.push(y.name + " (" + sec.name + "): mine output +6 alloy."); }
+    if (sec.specialty === "refinery") { S.components += 4; report.lines.push(y.name + " (" + sec.name + "): refinery output +4 components."); }
+    if (sec.specialty === "agri") { S.credits += 25; report.otherIncome += 25; report.lines.push(y.name + " (" + sec.name + "): food-freight work +" + fmt(25) + "."); }
+  });
+
+  /* The week's bills — Detroit itemised them, and so do we */
+  S.yards.forEach(function (y) {
+    report.expWages += wageCost(y);
+    report.expUpkeep += 30 + (y.level - 1) * 15;
+  });
+  report.expUpkeep += Object.keys(S.hubs).length * 10;
+  Object.keys(ROLES).forEach(function (r) { if (S.managers[r]) report.expStaff += S.managers[r].salary; });
+  Object.values(S.marketing).forEach(function (v) { report.expMkt += v; });
+  report.expRes = S.resBudget;
+  var licN = Object.keys(S.patents).length;
+  if (licN) { report.licensing = licN * 9; S.credits += report.licensing; report.otherIncome += report.licensing; report.lines.push("Patent licensing: your " + licN + " patented advance" + (licN > 1 ? "s earn" : " earns") + " +" + fmt(report.licensing) + " from rival yards building under licence."); }
+  if (S.loan) {
+    var pay = Math.min(S.loan.payment, S.loan.balance);
+    var intPart = Math.round(pay * S.loan.interestShare);
+    S.loan.balance -= pay; report.expLoan = pay;
+    report.lines.push("Loan desk: payment of " + fmt(pay) + " made (interest portion " + fmt(intPart) + "). Balance remaining: " + fmt(S.loan.balance) + ".");
+    if (S.loan.balance <= 0) { S.loan = null; report.lines.push("LOAN CLEARED: the Office loan desk stamps the note PAID IN FULL."); logNews("Corvane Consolidated cleared its yard loan in full."); }
+  }
+  var expenses = report.expWages + report.expUpkeep + report.expStaff + report.expMkt + report.expRes + report.expLoan;
+  S.credits -= expenses;
+
+  /* Research accrues */
+  var rpGain = rpPerWeek();
+  S.rp += rpGain;
+  var newlyReady = TECHS.filter(function (t) { return !S.tech[t.id] && t.year === dateOf().year && (!t.req || S.tech[t.req]); });
+  if (newlyReady.length && S.turn > 1) report.lines.push("The lab notes new work is now possible: " + newlyReady.map(function (t) { return t.name; }).join(", ") + ".");
+
+  /* Contract deadlines */
+  var expired = S.active.filter(function (c) { return S.turn > c.deadline; });
+  expired.forEach(function (c) {
+    report.lines.push("CONTRACT EXPIRED: " + c.buyer + " cancelled the remaining order (" + c.delivered + "/" + c.count + " delivered).");
+    logNews(c.buyer + " cancelled an unfilled contract.");
+  });
+  S.active = S.active.filter(function (c) { return S.turn <= c.deadline; });
+
+  /* Galaxy simulation */
+  galaxySim(report.lines);
+  expoCheck(report);
+  patentRaceCheck(report);
+
+  /* Econ swing & piracy decay */
+  if (S.econ.left > 0) { S.econ.left -= 1; if (S.econ.left <= 0) { S.econ.war = 0; S.econ.trade = 0; } }
+  if (S.pirates > 0) S.pirates -= 1;
+
+  /* New offers & fresh applicants */
+  while (S.offers.length < 3) spawnOffer();
+  if (Math.random() < 0.3 && S.offers.length < 5) spawnOffer();
+  if (S.pool.length < 6 || Math.random() < 0.3) S.pool.push(makeCandidate(pick(Object.keys(ROLES))));
+  if (S.pool.length > 10) S.pool.splice(0, S.pool.length - 10);
+
+  /* Book-keeping for the Boardroom */
+  S.history.push({ label: closedLabel, revenue: report.revenue, units: report.units, share: share });
+  if (S.history.length > 24) S.history.shift();
+  S.lastWeek = { label: closedLabel, units: report.units, revenue: report.revenue, contractRevenue: report.contractRevenue,
+    expenses: expenses, expWages: report.expWages, expUpkeep: report.expUpkeep, expStaff: report.expStaff,
+    expMkt: report.expMkt, expRes: report.expRes, expLoan: report.expLoan, produced: report.produced.slice(), share: share };
+
+  var nw = netWorth();
+  if (!S.won && nw >= 60000) {
+    S.won = true;
+    report.lines.push("★ MILESTONE: Net worth passed " + fmt(60000) + ". Corvane Consolidated is now the galaxy's premier shipwright.");
+    logNews("Corvane Consolidated Yards named the galaxy's premier shipwright.");
+    S.lastHeadline = "CORVANE CONSOLIDATED NAMED THE GALAXY'S PREMIER SHIPWRIGHT";
+  }
+  if (dateOf().year >= CHARTER_END_YEAR && !S.charterShown) S.charterPending = true;
+
+  render();
+  showReport(report, share, rivalRevTotal, nw, rpGain);
+  if (S.credits < -1000) { S.over = true; $("overBackdrop").classList.add("open"); }
+}
+function galaxySim(lines) {
+  var secs = Object.values(S.sectors);
+  secs.forEach(function (sec) { if (sec.surge) { sec.surge.weeks -= 1; if (sec.surge.weeks <= 0) sec.surge = null; } });
+  var roll = Math.random();
+  if (roll < 0.14) {
+    var calm = secs.filter(function (x) { return x.status !== "war"; });
+    var sec2 = pick(calm);
+    if (sec2.status === "peace") { sec2.status = "tension"; lines.push("TENSION: Border incidents flare in " + sec2.name + ". War demand is climbing."); logNews("Tensions flare in " + sec2.name + "."); }
+    else { sec2.status = "war"; lines.push("WAR BREAKS OUT in " + sec2.name + "! Warship demand spikes — and so does the risk of running the lanes."); logNews("War breaks out in " + sec2.name + "."); S.lastHeadline = "WAR BREAKS OUT IN " + sec2.name.toUpperCase(); }
+  } else if (roll < 0.24) {
+    var wars = secs.filter(function (x) { return x.status === "war"; });
+    if (wars.length > 1) { var sec3 = pick(wars); sec3.status = "tension"; lines.push("CEASEFIRE in " + sec3.name + ". Guns cool; freighters are the smart money now."); logNews("Ceasefire declared in " + sec3.name + "."); }
+  } else if (roll < 0.36) {
+    var sec4 = pick(secs);
+    var type = Math.random() < 0.5 ? "war" : "trade";
+    sec4.surge = { type: type, weeks: 12 };
+    lines.push("DEMAND SURGE: " + (type === "war" ? "Military buyers are panic-ordering in " : "Merchant fleets are expanding in ") + sec4.name + " — elevated demand for 3 weeks.");
+    logNews((type === "war" ? "War" : "Trade") + " demand surges in " + sec4.name + ".");
+  } else if (roll < 0.43) {
+    S.pirates = Math.max(S.pirates, 8);
+    lines.push("PIRATES: Raider activity spikes across the lanes. Delivery risk is up everywhere — dealership escorts earn their keep.");
+    logNews("Pirate activity spikes on the trade lanes.");
+  } else if (roll < 0.5) {
+    var sec5 = pick(secs);
+    if (sec5.status === "tension") { sec5.status = "peace"; lines.push("DIPLOMACY: Tempers cool in " + sec5.name + "; the sector stands down to peace."); logNews(sec5.name + " stands down to peace."); }
+  }
+}
+function showReport(report, share, rivalRevTotal, nw, rpGain) {
+  $("ledgerTitle").textContent = "Weekly Report — " + report.label;
+  $("ledgerSub").textContent = dateLabel() + " begins. Alloy now " + fmt(S.prices.alloy) + "/unit · Components " + fmt(S.prices.comp) + "/unit · Lab gained " + rpGain.toFixed(1) + " RP.";
+  var body = "";
+  if (S.lastHeadline) body += '<div class="headline"><small>The Corvane Gazette</small>' + esc(S.lastHeadline) + '</div>';
+  var keys = Object.keys(report.salesByModel);
+  if (keys.length) {
+    body += '<h3 style="margin:8px 0 4px">Showroom sales by model</h3><table class="report"><tr><th>Model</th><th class="num">Ships</th><th class="num">Revenue</th></tr>' +
+      keys.map(function (k) { return '<tr><td>' + esc(k) + '</td><td class="num">' + report.salesByModel[k].units + '</td><td class="num">' + fmt(report.salesByModel[k].revenue) + '</td></tr>'; }).join("") + '</table>';
+  }
+  if (report.produced.length) body += '<h3 style="margin:10px 0 4px">Production completed</h3><ul>' + report.produced.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + '</ul>';
+  body += '<h3 style="margin:10px 0 4px">The week\'s events</h3><ul>' +
+    (report.lines.length ? report.lines : ["A quiet week. The yards hum, the lanes run, nothing exploded."]).map(function (l) { return "<li>" + esc(l) + "</li>"; }).join("") + '</ul>';
+  body += '<h3 style="margin:10px 0 4px">Market share — revenue</h3>' +
+    shareRow("Corvane Consolidated (you)", report.revenue, report.revenue + rivalRevTotal, true) +
+    S.rivals.map(function (r) { return shareRow(r.name, r.lastRev, report.revenue + rivalRevTotal, false); }).join("");
+  $("ledgerBody").innerHTML = body;
+  var expenses = report.expWages + report.expUpkeep + report.expStaff + report.expMkt + report.expRes + report.expLoan;
+  $("ledgerTotals").innerHTML =
+    "Ship revenue: +" + fmt(report.revenue) + " · Other income: +" + fmt(report.otherIncome) + (report.licensing ? " (incl. patent licensing " + fmt(report.licensing) + ")" : "") +
+    "<br>Outgoings: −" + fmt(expenses) + " (wages " + fmt(report.expWages) + " · upkeep " + fmt(report.expUpkeep) + " · staff " + fmt(report.expStaff) + " · advertising " + fmt(report.expMkt) + " · research " + fmt(report.expRes) + (report.expLoan ? " · loan " + fmt(report.expLoan) : "") + ")" +
+    "<br>Credits: " + fmt(S.credits) + " · Alloy: " + S.alloy + " · Components: " + S.components + " · Net worth: " + fmt(nw) + " / " + fmt(60000) + " · Market share: " + share + "%";
+  $("ledgerBackdrop").classList.add("open");
+}
+/* ================= INIT ================= */
+function wireDesigner() {
+  $("selSize").onchange = function () { ui.design.size = this.value; ui.test = null; renderDesigner(); };
+  $("selHull").onchange = function () { ui.design.hull = this.value; ui.test = null; renderDesigner(); };
+  $("selEngine").onchange = function () { ui.design.engine = this.value; ui.test = null; renderDesigner(); };
+  $("selWeapon").onchange = function () { ui.design.weapon = this.value; ui.test = null; renderDesigner(); };
+  $("inpDesignName").oninput = function () { ui.design.name = this.value; renderDesignerSoft(); };
+  $("btnTest").onclick = testFlight;
+  $("btnSaveBp").onclick = function () {
+    var name = ui.design.name.trim();
+    if (!name) { flash("Give the design a name before saving it as a blueprint.", true); $("inpDesignName").focus(); return; }
+    var d = ui.design, st = designStats(d);
+    var price = d.price == null ? st.value : d.price, appeal = d.appeal == null ? 100 : d.appeal;
+    var exact = S.blueprints.filter(function (bp) {
+      return bp.name === name && (bp.ver == null ? GAME_VERSION : bp.ver) === (d.ver == null ? GAME_VERSION : d.ver) && bp.size === d.size && bp.hull === d.hull && bp.engine === d.engine && bp.weapon === d.weapon &&
+        (bp.price == null ? designStats(bp).value : bp.price) === price && (bp.appeal == null ? 100 : bp.appeal) === appeal;
+    })[0];
+    if (exact) { flash("Already saved as " + designLabel(exact) + " — change a part, the price, or test-fly it first to create the next version.", true); return; }
+    var ver = nextVerFor(name);
+    var bpNew = { id: uid(), name: name, ver: ver, size: d.size, hull: d.hull, engine: d.engine, weapon: d.weapon, price: price, appeal: appeal };
+    S.blueprints.push(bpNew);
+    ui.design.ver = ver;
+    flash("Blueprint saved: " + designLabel(bpNew) + (ver === GAME_VERSION ? " — the first version of this line." : " — version " + fmtVer(ver) + " in the “" + name + "” line.") + " Asking " + fmt(price) + ", appeal " + appeal + ". Lay its keel in Assembly.");
+    render();
+  };
+  $("btnLedgerClose").onclick = function () {
+    $("ledgerBackdrop").classList.remove("open");
+    if (S.charterPending) {
+      S.charterPending = false; S.charterShown = true;
+      var nw = netWorth();
+      $("charterBody").textContent = S.won
+        ? "Twenty years on the charter, and the verdict is already written in the Boardroom: net worth " + fmt(nw) + ", the galaxy's premier shipwright. The charter is renewed on the spot — the yards, the dealerships, and the long research programme are yours to keep building."
+        : "Twenty years on the charter. Net worth stands at " + fmt(nw) + " of the " + fmt(60000) + " the founders promised the bank. The bank, being a bank, renews anyway — the yards are worth more standing than seized. The charter rolls on, and so does the research programme.";
+      $("charterBackdrop").classList.add("open");
+    }
+  };
+  $("btnCharterContinue").onclick = function () { $("charterBackdrop").classList.remove("open"); };
+  $("btnRestart").onclick = function () {
+    $("overBackdrop").classList.remove("open");
+    newGame();
+    ui.sector = "corvane"; ui.shipDest = {}; ui.test = null; ui.view = "board";
+    ui.design = { size: "corvette", hull: "wedge", engine: "standard", weapon: "laser", name: "", ver: GAME_VERSION, price: null, appeal: null };
+    VIEWS.forEach(function (v) { $("view-" + v.id).classList.toggle("active", v.id === "board"); });
+    render();
+    flash("A new company rises from the ashes — " + fmtVer(GAME_VERSION) + ", Week 1 · 2708. Good luck, shipwright.");
+  };
+}
+var RIVAL_MODELS = ["Ravager", "Pike", "Sentinel", "Dart", "Comet-Kite", "Bastion", "Haulier", "Lance", "Tern", "Vandal", "Cutter", "Mastiff", "Osprey", "Glaive"];
+var LOAN_OFFERS = [
+  { label: "Yard Expansion Note", principal: 5000, rate: 0.12, term: 52 },
+  { label: "Fleet Builder Loan", principal: 12000, rate: 0.18, term: 104 },
+  { label: "Consolidation Loan", principal: 25000, rate: 0.24, term: 156 }
+];
+newGame();
+wireDesigner();
+render();
+/* ================= FEATURE SYSTEMS — Expo, scouts, patents, refits, loans, timeline ================= */
+function effCost(t) { return (S.rivalPatented[t.id] && !S.tech[t.id]) ? Math.ceil(t.cost * 1.5) : t.cost; }
+function genRivalDesign(r) {
+  var year = S ? dateOf().year : START_YEAR;
+  var sizes = year >= 2714 ? ["corvette", "frigate", "frigate", "capital"] : year >= 2710 ? ["fighter", "corvette", "frigate"] : ["fighter", "corvette", "corvette"];
+  var d = { name: pick(RIVAL_MODELS), size: pick(sizes), hull: pick(Object.keys(HULLS)), engine: pick(Object.keys(ENGINES)), weapon: pick(Object.keys(WEAPONS)) };
+  var st = designStats(d);
+  d.price = Math.round(st.value * rnd(0.9, 1.28));
+  d.appeal = ri(84, 116);
+  d.label = d.name + " " + st.sizeName;
+  return d;
+}
+function rivalScoutHtml(r, i) {
+  var until = S.scout[i] || 0;
+  if (S.turn < until && r.design) {
+    var st = designStats(r.design);
+    return '<div class="person"><div class="row"><strong>' + esc(r.name) + '</strong><span class="pill free">SCOUTED — ' + (until - S.turn) + ' wk left</span></div>' +
+      '<div class="small muted">Current model: <strong style="color:var(--ink)">' + esc(r.design.label) + '</strong> — ' + HULLS[r.design.hull].name + ' · ' + ENGINES[r.design.engine].name + ' · ' + WEAPONS[r.design.weapon].name +
+      '<br>Firepower ' + st.fire + ' · Speed ' + st.speed + ' · Cargo ' + st.cargo + ' · Appeal ' + r.design.appeal + ' · <strong style="color:var(--ink)">Charging ' + fmt(r.design.price) + '</strong> (market value ' + fmt(st.value) + ')</div></div>';
+  }
+  return '<div class="person"><div class="row"><strong>' + esc(r.name) + '</strong><span class="muted small">No current intelligence — their yards work behind closed gates.</span>' +
+    '<span class="acts"><button class="btn mini" data-scout="' + i + '" ' + (S.credits < 400 ? "disabled" : "") + '>Buy scout report — ' + fmt(400) + '</button></span></div></div>';
+}
+function buyScout(i) {
+  if (S.credits < 400) { flash("A scout report costs ₡400.", true); return; }
+  S.credits -= 400;
+  S.scout[i] = S.turn + 26;
+  if (!S.rivals[i].design) S.rivals[i].design = genRivalDesign(S.rivals[i]);
+  logNews("Scouts report on " + S.rivals[i].name + ": they are building the " + S.rivals[i].design.label + " and charging " + fmt(S.rivals[i].design.price) + ".");
+  flash("Scout report filed on " + S.rivals[i].name + " — spec sheet unlocked in the Boardroom for 26 weeks.");
+  render();
+}
+function timelineHtml() {
+  var keys = Object.keys(ERA_EVENTS).map(Number).sort(function (a, b) { return a - b; });
+  var nextFound = false;
+  var rows = keys.map(function (k) {
+    var ev = ERA_EVENTS[k];
+    var past = k < S.turn;
+    var isNext = !past && !nextFound;
+    if (isNext) nextFound = true;
+    return '<div style="padding:7px 9px;border:1px solid ' + (isNext ? "var(--accent)" : "var(--line)") + ';border-radius:8px;margin-bottom:6px;background:var(--panel2)' + (past ? ";opacity:.55" : "") + '">' +
+      '<strong>' + dateLabel(k) + '</strong> <span class="pill ' + (past ? "" : isNext ? "free" : "") + '">' + (past ? "HISTORY" : isNext ? "NEXT — IN " + (k - S.turn + 1) + " WK" : "AHEAD") + '</span>' +
+      '<div style="font-weight:700;margin-top:2px">' + esc(ev.headline) + '</div>' +
+      '<div class="small muted">' + esc(ev.text) + '</div></div>';
+  }).join("");
+  return '<h3>Galactic Timeline — history you can plan around</h3>' + rows +
+    '<p class="small muted">Random wars, ceasefires, surges, and pirate seasons still strike between the named events — the timeline is the spine, not the whole animal.</p>';
+}
+function expoCheck(report) {
+  if (S.turn <= 1 || (S.turn - 1) % WEEKS_PER_YEAR !== 0) return;
+  var year = dateOf(S.turn - 1).year;
+  S.expoCount += 1;
+  function warScore(d) { var st = designStats(d); return st.role === "Warship" ? st.fire * 3 + st.speed * 2 + appealOf(d) / 8 : -1; }
+  function freeScore(d) { var st = designStats(d); return st.role === "Freighter" ? st.cargo * 3 + st.speed + appealOf(d) / 8 : -1; }
+  function valueScore(d) { var st = designStats(d); return (st.fire + st.cargo + st.speed) / Math.max(0.5, askingPrice(d) / st.value) + appealOf(d) / 10; }
+  var cats = [
+    { name: "Best Warship", score: warScore }, { name: "Best Freighter", score: freeScore }, { name: "Best Value", score: valueScore }
+  ];
+  var wins = 0;
+  cats.forEach(function (cat) {
+    var best = null;
+    S.blueprints.forEach(function (bp) { var sc = cat.score(bp); if (sc > 0 && (!best || sc > best.sc)) best = { sc: sc, firm: "Corvane Consolidated", model: designLabel(bp), you: true }; });
+    S.rivals.forEach(function (r) {
+      if (!r.design) r.design = genRivalDesign(r);
+      var rd = { name: r.design.name, size: r.design.size, hull: r.design.hull, engine: r.design.engine, weapon: r.design.weapon, price: r.design.price, appeal: r.design.appeal, ver: GAME_VERSION };
+      var sc = cat.score(rd);
+      if (sc > 0 && (!best || sc > best.sc)) best = { sc: sc, firm: r.name, model: r.design.label, you: false };
+    });
+    if (!best) { report.lines.push("GALACTIC EXPO " + year + " — " + cat.name + ": no eligible entries. The judges went home early."); return; }
+    report.lines.push("GALACTIC EXPO " + year + " — " + cat.name + ": " + best.model + " (" + best.firm + ").");
+    logNews("Expo " + year + ", " + cat.name + ": " + best.model + " (" + best.firm + ").");
+    if (best.you) { wins += 1; S.trophies.push({ year: year, cat: cat.name, model: best.model }); }
+  });
+  if (wins > 0) {
+    S.rep = clamp(S.rep + wins * 5, 0, 100);
+    S.lastHeadline = "EXPO GLORY AT CORVANE — " + wins + " TROPH" + (wins > 1 ? "IES" : "Y") + " FOR THE HOME YARDS";
+    report.lines.push("EXPO VERDICT: " + wins + " troph" + (wins > 1 ? "ies" : "y") + " for Corvane. Reputation rises to " + S.rep + " — buyers will lean a little further on price for a name with silverware.");
+  } else {
+    S.rep = clamp(S.rep - 2, 0, 100);
+    report.lines.push("EXPO VERDICT: the trophies went elsewhere this year. Reputation slips to " + S.rep + " — next year's catalogue is the answer.");
+  }
+}
+function patentRaceCheck(report) {
+  TECHS.forEach(function (t) {
+    if (!S.tech[t.id] && !S.rivalPatented[t.id] && !S.patents[t.id] && S.race[t.id] && S.turn >= S.race[t.id]) {
+      var r = pick(S.rivals);
+      S.rivalPatented[t.id] = r.name;
+      report.lines.push("PATENT LOST: " + r.name + " patented " + t.name + " first. Working around their patent will cost +50% RP in the lab.");
+      logNews(r.name + " patented " + t.name + " — the lab will have to work around it.");
+    }
+  });
+  S.rivals.forEach(function (r) { if (Math.random() < 0.04) r.design = genRivalDesign(r); });
+}
+/* ---- Loan desk ---- */
+function renderLoan() {
+  var el = $("loanDesk");
+  if (!el) return;
+  if (S.loan) {
+    var weeksLeft = Math.max(1, Math.ceil(S.loan.balance / S.loan.payment));
+    el.innerHTML = '<dl class="kv"><dt>Facility</dt><dd>' + esc(S.loan.label) + '</dd>' +
+      '<dt>Balance</dt><dd>' + fmt(S.loan.balance) + ' remaining (principal ' + fmt(S.loan.principal) + ', total interest ' + fmt(S.loan.totalInterest) + ')</dd>' +
+      '<dt>Payment</dt><dd>' + fmt(S.loan.payment) + '/wk — about ' + weeksLeft + ' wk left on the schedule</dd>' +
+      '<dt>Interest</dt><dd>' + fmt(Math.round(S.loan.payment * S.loan.interestShare)) + ' of each payment is interest, itemised in the Weekly Report</dd></dl>' +
+      '<div class="btnrow"><button class="btn primary" id="btnPayoff" ' + (S.credits < S.loan.balance ? "disabled" : "") + '>Pay off in full — ' + fmt(S.loan.balance) + '</button></div>' +
+      '<p class="small muted">The desk holds one facility at a time. Miss nothing: payments leave automatically each week, before you see the report.</p>';
+    $("btnPayoff").onclick = function () {
+      S.credits -= S.loan.balance;
+      logNews("Corvane Consolidated paid off the " + S.loan.label + " early. The loan desk stamps it PAID IN FULL.");
+      flash("Loan paid off in full — " + fmt(S.loan.balance) + ". The desk is clear.");
+      S.loan = null;
+      render();
+    };
+    return;
+  }
+  el.innerHTML = '<p class="small muted" style="margin-top:0">Borrow to expand — a second yard, a dealership chain, a research surge. Interest is itemised in every Weekly Report while the note runs.</p>' +
+    LOAN_OFFERS.map(function (o, i) {
+      var total = Math.round(o.principal * (1 + o.rate));
+      var pay = Math.ceil(total / o.term);
+      return '<div class="person"><div class="row"><strong>' + o.label + '</strong><span class="pill">' + fmt(o.principal) + '</span>' +
+        '<span class="muted small">' + Math.round(o.rate * 100) + '% over ' + o.term + ' wk · total repayable ' + fmt(total) + ' · ' + fmt(pay) + '/wk</span>' +
+        '<span class="acts"><button class="btn mini primary" data-loan="' + i + '">Borrow</button></span></div></div>';
+    }).join("");
+  Array.prototype.forEach.call(el.querySelectorAll("[data-loan]"), function (b) {
+    b.onclick = function () {
+      var o = LOAN_OFFERS[Number(b.getAttribute("data-loan"))];
+      if (S.loan) return;
+      var total = Math.round(o.principal * (1 + o.rate));
+      S.loan = { label: o.label, principal: o.principal, balance: total, totalInterest: total - o.principal, payment: Math.ceil(total / o.term), interestShare: (total - o.principal) / total };
+      S.credits += o.principal;
+      logNews("The Office loan desk advanced " + fmt(o.principal) + " (" + o.label + ") — " + fmt(S.loan.payment) + "/wk for " + o.term + " weeks.");
+      flash("Borrowed " + fmt(o.principal) + " — " + fmt(S.loan.payment) + "/wk leaves the account automatically, interest itemised in the Weekly Report.");
+      render();
+    };
+  });
+}
+/* ---- Refits ---- */
+function refitRowHtml(sh) {
+  var sel = ui.refit[sh.id] || {};
+  var eSel = sel.engine || sh.design.engine, wSel = sel.weapon || sh.design.weapon;
+  function opts(obj, kind, cur) {
+    return Object.keys(obj).map(function (k) {
+      var lock = partLocked(kind, k);
+      return '<option value="' + k + '"' + (k === cur ? " selected" : "") + (lock ? " disabled" : "") + '>' + obj[k].name + (lock ? " (research)" : "") + '</option>';
+    }).join("");
+  }
+  var changed = eSel !== sh.design.engine || wSel !== sh.design.weapon;
+  var nd = { name: sh.design.name, size: sh.design.size, hull: sh.design.hull, engine: eSel, weapon: wSel };
+  var cost = Math.round(designStats(nd).cr * 0.4);
+  return '<div class="row" style="margin-top:6px"><span class="muted small" style="font-weight:700">REFIT</span>' +
+    '<select data-refit-eng="' + sh.id + '" style="flex:1;min-width:110px;width:auto" aria-label="Refit engines">' + opts(ENGINES, "engine", eSel) + '</select>' +
+    '<select data-refit-wep="' + sh.id + '" style="flex:1;min-width:110px;width:auto" aria-label="Refit weapons">' + opts(WEAPONS, "weapon", wSel) + '</select>' +
+    '<button class="btn mini" data-refit-go="' + sh.id + '" ' + (!changed || S.credits < cost ? "disabled" : "") + '>' + (changed ? "Refit to " + fmtVer((sh.design.ver == null ? GAME_VERSION : sh.design.ver) + 1) + " — " + fmt(cost) : "Pick a new part") + '</button></div>' +
+    (changed ? '<div class="small muted">New spec: ' + ENGINES[eSel].name + ' · ' + WEAPONS[wSel].name + ' — an old hull with new teeth, at 40% of build cost. Frontier buyers love these.</div>' : '');
+}
+function doRefit(shipId) {
+  var idx = S.stock.findIndex(function (x) { return x.id === shipId; });
+  if (idx < 0) return;
+  var sh = S.stock[idx];
+  var sel = ui.refit[shipId] || {};
+  var eSel = sel.engine || sh.design.engine, wSel = sel.weapon || sh.design.weapon;
+  if (eSel === sh.design.engine && wSel === sh.design.weapon) return;
+  var nd = { name: sh.design.name, size: sh.design.size, hull: sh.design.hull, engine: eSel, weapon: wSel };
+  var cost = Math.round(designStats(nd).cr * 0.4);
+  if (S.credits < cost) { flash("Refit costs " + fmt(cost) + " — the firm cannot cover it.", true); return; }
+  S.credits -= cost;
+  sh.design.engine = eSel; sh.design.weapon = wSel;
+  sh.design.ver = (sh.design.ver == null ? GAME_VERSION : sh.design.ver) + 1;
+  delete ui.refit[shipId];
+  logNews("Refit complete: " + designLabel(sh.design) + " leaves the dock with " + ENGINES[eSel].name + " and " + WEAPONS[wSel].name + ".");
+  flash("Refitted to " + designLabel(sh.design) + " for " + fmt(cost) + " — same hull, new era.");
+  render();
+}
+    </script>
+  <script>
+/* Hull & Havoc — phone persistence (added by build_phone.py; not in the master).
+   Save key 'hull-and-havoc-save-v1', save field ver:1. The game holds state in
+   the globals S / ui / uidCounter and repaints via render(); we persist after
+   every repaint and restore on boot before the player touches anything. */
+(function () {
+  var KEY = 'hull-and-havoc-save-v1';
+  function persist() {
+    try {
+      if (!window.S) return;
+      localStorage.setItem(KEY, JSON.stringify({ ver: 1, S: window.S, uid: window.uidCounter, ui: window.ui }));
+    } catch (e) {}
+  }
+  function validSave(d) {
+    return !!d && typeof d === 'object' && d.ver === 1 && !!d.S && typeof d.S === 'object' &&
+      typeof d.S.turn === 'number' && typeof d.S.credits === 'number' &&
+      Array.isArray(d.S.blueprints) && Array.isArray(d.S.yards) &&
+      typeof d.uid === 'number' && isFinite(d.uid) && d.uid >= 1;
+  }
+  /* Restore: the game script has already run newGame() + render() once. */
+  try {
+    var raw = localStorage.getItem(KEY);
+    if (raw) {
+      var data = null;
+      try { data = JSON.parse(raw); } catch (e) { data = null; }
+      if (validSave(data)) {
+        window.S = data.S;
+        window.uidCounter = data.uid;
+        if (data.ui && typeof data.ui === 'object') window.ui = data.ui;
+        if (window.VIEWS && window.ui) {
+          window.VIEWS.forEach(function (v) {
+            var el = document.getElementById('view-' + v.id);
+            if (el) el.classList.toggle('active', v.id === window.ui.view);
+          });
+        }
+        if (window.S.over) {
+          var ob = document.getElementById('overBackdrop');
+          if (ob) ob.classList.add('open');
+        }
+        if (typeof window.render === 'function') window.render();
+      } else {
+        try { localStorage.removeItem(KEY); } catch (e) {}
+      }
+    }
+  } catch (e) {}
+  /* Persist after every repaint from here on (this also makes the in-game
+     Restart button overwrite the save: it calls newGame() then render()). */
+  if (typeof window.render === 'function') {
+    var gameRender = window.render;
+    window.render = function () {
+      var r = gameRender.apply(this, arguments);
+      persist();
+      return r;
+    };
+  }
+  persist(); /* record the boot state too, so a first close never loses Week 1 */
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') persist(); });
+  window.addEventListener('pagehide', persist);
+})();
+</script>
+<script>
+if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+  window.addEventListener('load', function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); });
+}
+</script>
+</body>
+</html>
