@@ -1,12 +1,25 @@
 # Hull & Havoc — phone build (PWA)
 
-Built Nov 8, 2026 from the v1.200 artifact export (slug
+Built Nov 8, 2026 from the v1.201 artifact export (slug
 `starship-manufacturing-game`; v1.100 was the Detroit remodel, v1.101 the
 numbering-law tick). The master
 export is kept verbatim at `~/workspace/games/hull-and-havoc/master.html`;
 this folder is generated from it by
 `~/workspace/games/hull-and-havoc/build_phone.py`. Same setup as the Argus
 Zero phone build.
+
+**Release 5 — Nov 8, 2026:** rebuilt from the game v1.201 export
+(`GAME_VERSION` 1200 → 1201 per the numbering law — fixes/additions tick
+the last place; all version displays read v1.201 and newly saved ship
+designs are born at v1.201; existing design versions are untouched).
+New in v1.201: a **Restart — New Company option** (buttons in the HUD and
+Boardroom open a confirmation modal naming the live week, credits,
+design count, yards, and trophies; Confirm runs `newGame()`, Cancel
+changes nothing) and **firm renaming** (`S.firmName`, default "Corvane
+Consolidated Yards", backfilled in `render()` for older state, rendered
+HTML-escaped at 34 call sites, 40-character cap, blank names rejected).
+`HH_CACHE` bumped to `hull-and-havoc-v5`. The previous master is kept at
+`../master-v1200.html`.
 
 **Release 4 — Nov 8, 2026:** rebuilt from the game v1.200 export — a
 feature wave (`GAME_VERSION` 1101 → 1200; all version displays read
@@ -42,7 +55,7 @@ build refusal is visible beside the Lay Keel button that produced it.
 `../master-v1100-prefeedbackfix.html`.
 
 ## Files
-- `index.html` — the full game (v1.200) as a standalone page, plus a small
+- `index.html` — the full game (v1.201) as a standalone page, plus a small
   persistence controller the builder appends. Saves via `localStorage`
   (key `hull-and-havoc-save-v1`, save field `ver:1`).
 - `manifest.webmanifest` — install metadata (name "Hull & Havoc", dark
@@ -63,10 +76,11 @@ repaints through `render()`. The appended controller:
   panel if the saved game was finished), then re-renders;
 - ignores a corrupt, foreign-version, or shape-invalid save and starts
   fresh instead of crashing;
-- the in-game **Restart** button (`newGame()` + `render()`) overwrites the
+- the in-game **Restart — New Company** option (v1.201: HUD + Boardroom
+  buttons → confirmation modal → `newGame()` + `render()`) overwrites the
   stored save with the new company, exactly as expected.
 The game's own version system is untouched by the phone build:
-`GAME_VERSION` displays v1.200 and blueprint versions still bump by
+`GAME_VERSION` displays v1.201 and blueprint versions still bump by
 thousandths.
 
 ## Boot order (resolved — no phone-only game-code fix anymore)
@@ -115,9 +129,11 @@ Fonts when online; offline it falls back to system fonts and the game is
 otherwise fully playable from the service-worker cache.
 
 ## Versioning (Torrence, Nov 2026)
-In-game versions follow his scheme: this build is v1.101 (the Detroit
+In-game versions follow his scheme: this build is v1.201 (the Detroit
 remodel earned the tenth-step to v1.100; the feedback fix ticked the
-thousandths place to v1.101); further tweaks tick on (v1.102 …); ship
-designs use the same system per design line.
+thousandths place to v1.101; the v1.200 feature wave stepped the
+hundredths; the restart/rename additions ticked to v1.201); further
+tweaks tick on (v1.202 …); ship designs use the same system per design
+line.
 The service-worker `HH_CACHE` bumps independently per phone release
-(v1, v2, v3…) and is not the game version.
+(v1, v2, v3, v4, v5…) and is not the game version.

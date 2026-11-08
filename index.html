@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="color-scheme" content="light dark" />
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
-    <title>Hull &amp; Havoc v1.200 — a Detroit-style starship tycoon</title>
+    <title>Hull &amp; Havoc v1.201 — a Detroit-style starship tycoon</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -149,6 +149,14 @@
       .btn:hover:not(:disabled) { border-color: var(--accent); }
       .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
       .btn.danger { border-color: var(--red); color: var(--red); }
+      .btn.danger-solid { background: var(--red); border-color: var(--red); color: #fff; }
+      .hud-restart { background: var(--chip); color: var(--ink); border: 1px solid var(--line); border-radius: 7px; padding: 7px 11px; font-weight: 700; font-size: 13.5px; white-space: nowrap; }
+      .hud-restart:hover { border-color: var(--red); color: var(--red); }
+      .firmbar { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; margin-bottom: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel2); }
+      .firmbar .fname { font-family: "Orbitron", sans-serif; font-weight: 700; font-size: 15.5px; letter-spacing: .03em; overflow-wrap: anywhere; }
+      .firmbar .flabel { font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); width: 100%; margin-bottom: -4px; }
+      .modal label.firmlabel { display: block; font-size: 12.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 12px 0 4px; }
+      .modal .rename-err { color: var(--red); font-weight: 700; min-height: 20px; margin-top: 6px; }
 
       /* ---------- Designer ---------- */
       .shipstage { background: radial-gradient(ellipse at 50% 60%, color-mix(in srgb, var(--teal) 10%, transparent), transparent 70%), var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 6px 4px 0; text-align: center; }
@@ -210,7 +218,7 @@
       .market .mkt { display: inline-flex; gap: 8px; align-items: center; font-weight: 700; }
 
 
-      /* ---------- v1.200: cabinet, relations, staff, decisions ---------- */
+      /* ---------- v1.200: cabinet, relations, staff, decisions · v1.201: restart & rename ---------- */
       .cabinet { display: grid; gap: 8px; margin-top: 6px; }
       @media (min-width: 700px) { .cabinet { grid-template-columns: 1fr 1fr; } }
       .trophy-card { border: 1px solid var(--amber); border-radius: 8px; padding: 9px 11px; background: color-mix(in srgb, var(--amber) 9%, var(--panel2)); }
@@ -256,7 +264,7 @@
   <body>
     <div class="hud" id="hud"></div>
     <div class="flash" id="flash" role="status"></div>
-    <p class="ver-note"><strong>VERSION 1.200</strong> &nbsp;·&nbsp; A starship tycoon modelled on <strong>Detroit</strong>, the classic automobile-company game: run the firm week by week from your headquarters — design in the Design Office, build on crewed assembly lines, sell through dealerships you plant across the galaxy, hire your department heads, and research the next era's technology before your rivals do. Every ship design still carries the house version system: born <strong>v1.200</strong>, +0.001 at every re-save under the same name.</p>
+    <p class="ver-note"><strong>VERSION 1.201</strong> &nbsp;·&nbsp; A starship tycoon modelled on <strong>Detroit</strong>, the classic automobile-company game: run the firm week by week from your headquarters — design in the Design Office, build on crewed assembly lines, sell through dealerships you plant across the galaxy, hire your department heads, and research the next era's technology before your rivals do. Every ship design still carries the house version system: born <strong>v1.201</strong>, +0.001 at every re-save under the same name.</p>
 
     <nav class="deptnav" id="deptNav" aria-label="Headquarters departments"></nav>
 
@@ -279,7 +287,7 @@
           <li><strong>The Loan Desk:</strong> in the Boardroom's Office panel, borrow to expand — payments and their interest portion are itemised in the Weekly Report, with the balance and schedule always visible.</li>
           <li><strong>The timeline:</strong> history has a shape. The Boardroom lists the named eras ahead — the Founding War, the Long Quiet (two years when only cheap hulls sell), the Ember Embargo — so you can stock, price, and research around what's coming. Random wars and surges still happen on top.</li>
           <li><strong>Decision events:</strong> some weeks the galaxy asks <em>you</em> — smuggle through a blockade or comply, grant the foreman's raise or refuse it, take a supplier's bulk deal or keep your cash. Choices land in the ledger, in reputations, and in morale, and the Weekly Report remembers them.</li>
-          <li><strong>Buyers remember:</strong> every sector keeps a standing relationship with Corvane — deliver contracts on time and sell steadily and it warms (better acceptance, richer offers); miss deadlines or vanish and it cools. Sectors also develop <strong>tastes</strong> — after pirate surges they want guns, after ceasefires they want haulers — shown on each sector's card.</li>
+          <li><strong>Buyers remember:</strong> every sector keeps a standing relationship with your firm — deliver contracts on time and sell steadily and it warms (better acceptance, richer offers); miss deadlines or vanish and it cools. Sectors also develop <strong>tastes</strong> — after pirate surges they want guns, after ceasefires they want haulers — shown on each sector's card.</li>
           <li><strong>Trophy cabinet &amp; ambitions:</strong> the Boardroom keeps your Expo silverware and a board of standing goals — three Best Warship trophies, a sector monopoly, coming out of the Long Quiet profitable, and more. Some pay credits and reputation; some are pure honour, and each says which.</li>
           <li><strong>The report explains itself:</strong> every Weekly Report now carries a short <em>why</em> section naming the actual cause — the rival who undercut you and by how much, the ceasefire that cooled demand, the taste your range matched.</li>
           <li><strong>Named staff:</strong> a Chief Engineer speeds the lab (and rivals may try to poach them once your patents pile up), and every yard has a named Line Foreman whose morale — fed by fair pay and honest answers — moves that yard's pace and quality.</li>
@@ -291,7 +299,7 @@
     <!-- BOARDROOM -->
     <main class="layout active" id="view-board">
       <section class="panel span-2">
-        <h2>Boardroom — Corvane Consolidated Yards <span class="tag" id="boardTag"></span></h2>
+        <h2>Boardroom — <span id="boardFirmName">Corvane Consolidated Yards</span> <span class="tag" id="boardTag"></span></h2>
         <div class="flash flash-local" role="status"></div>
         <div id="boardMain"></div>
       </section>
@@ -314,7 +322,7 @@
     <!-- DESIGN OFFICE -->
     <main class="layout" id="view-design">
       <section class="panel span-2">
-        <h2>Design Office <span class="tag">slipway preview · versions from v1.200</span></h2>
+        <h2>Design Office <span class="tag">slipway preview · versions from v1.201</span></h2>
         <div class="flash flash-local" role="status"></div>
         <div class="shipstage">
           <div id="shipSvg"></div>
@@ -338,7 +346,7 @@
         </div>
       </section>
       <section class="panel">
-        <h2>Blueprints <span class="tag">every line starts at v1.200</span></h2>
+        <h2>Blueprints <span class="tag">every line starts at v1.201</span></h2>
         <div class="blueprints" id="blueprints"></div>
       </section>
     </main>
@@ -458,14 +466,44 @@
       </div>
     </div>
 
+    <!-- RESTART CONFIRMATION MODAL -->
+    <div class="backdrop" id="restartBackdrop">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="restartTitle">
+        <h2 id="restartTitle">↻ Restart — start a new company?</h2>
+        <p id="restartBody"></p>
+        <p><strong>This cannot be undone.</strong> If you only want a different name on the door, use Rename instead — that keeps your company, your week and your credits exactly as they are.</p>
+        <div class="btnrow">
+          <button class="btn" id="btnRestartCancel">Cancel — keep playing</button>
+          <button class="btn danger-solid" id="btnRestartConfirm">Yes — replace it with a new company</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RENAME FIRM MODAL -->
+    <div class="backdrop" id="renameBackdrop">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="renameTitle">
+        <h2 id="renameTitle">Rename your firm</h2>
+        <p class="small muted" style="margin:6px 0 0">The new name appears in the header, the Boardroom, the Weekly Report and the news wire. Renaming is free, and you can rename again at any time — it changes nothing else about your company.</p>
+        <label class="firmlabel" for="inpFirmName">Firm name (max 40 characters)</label>
+        <input type="text" id="inpFirmName" maxlength="40" autocomplete="off" />
+        <div class="rename-err" id="renameErr" role="alert"></div>
+        <div class="btnrow">
+          <button class="btn" id="btnRenameCancel">Cancel</button>
+          <button class="btn primary" id="btnRenameSave">Save name</button>
+        </div>
+      </div>
+    </div>
+
     <script>
     "use strict";
 /* ================= VERSION =================
    Version naming for this remodel started at 1.100 and ticks up in the
-   last place with every fix or addition — now at 1.200 — and every new
+   last place with every fix or addition — now at 1.201 — and every new
    design line is born at the game's version. Stored as integer
    thousandths: 1100 = v1.100, 1101 = v1.101. */
-var GAME_VERSION = 1200;
+var GAME_VERSION = 1201;
+var DEFAULT_FIRM_NAME = "Corvane Consolidated Yards";
+function firmName() { return (typeof S !== "undefined" && S && S.firmName) ? S.firmName : DEFAULT_FIRM_NAME; }
 function fmtVer(v) { return "v" + ((v == null ? 1000 : v) / 1000).toFixed(3); }
 function designLabel(d) { return (d.name || "Unnamed design") + " " + fmtVer(d.ver); }
 function nextVerFor(name) {
@@ -727,6 +765,7 @@ function makeCandidate(role) {
 function newGame() {
   uidCounter = 1;
   S = {
+    firmName: DEFAULT_FIRM_NAME,
     turn: 1, credits: 15000, alloy: 60, components: 40,
     prices: { alloy: 42, comp: 65 },
     sectors: {}, hubs: {}, yards: [], blueprints: [], stock: [], transit: [],
@@ -758,7 +797,7 @@ function newGame() {
   ["designer", "foreman", "sales", "research"].forEach(function (role) { S.pool.push(makeCandidate(role)); S.pool.push(makeCandidate(role)); });
   TECHS.forEach(function (t) { S.race[t.id] = turnOfYear(t.year) + ri(20, 160); });
   S.rivals.forEach(function (r) { r.design = genRivalDesign(r); });
-  logNews("Corvane Consolidated Yards opens its books — " + fmtVer(GAME_VERSION) + ". One yard, one dealership, a hired-nobody staff, and a galaxy at war with itself. The charter runs to 2728.");
+  logNews(firmName() + " opens its books — " + fmtVer(GAME_VERSION) + ". One yard, one dealership, a hired-nobody staff, and a galaxy at war with itself. The charter runs to 2728.");
   logNews("War in the Dusk Verge and at Emberfall is driving warship demand to siege levels.");
   spawnOffer(); spawnOffer(); spawnOffer();
 }
@@ -1042,7 +1081,7 @@ function goalsList() {
   var nw = netWorth();
   return [
     { id: "warship3", name: "Admiral's Shelf — Best Warship at three Expos", prog: warTrophies + " / 3 trophies", done: warTrophies >= 3, reward: "Pays " + fmt(3000) + " + 5 reputation", honor: false },
-    { id: "monopoly", name: "Sector Monopoly — one sector devoted to Corvane", prog: "Best standing: " + (bestRelName || "—") + " at " + Math.round(bestRel) + " / 85 relationship", done: bestRel >= 85, reward: "Pays " + fmt(2000), honor: false },
+    { id: "monopoly", name: "Sector Monopoly — one sector devoted to " + firmName(), prog: "Best standing: " + (bestRelName || "—") + " at " + Math.round(bestRel) + " / 85 relationship", done: bestRel >= 85, reward: "Pays " + fmt(2000), honor: false },
     { id: "quietprofit", name: "Through the Long Quiet, Profitable", prog: S.longQuietDone ? (S.longQuietNet > 0 ? "Came through " + fmt(S.longQuietNet) + " ahead" : "Came through " + fmt(Math.abs(S.longQuietNet)) + " behind") : (S.longQuietWasActive ? "In the Quiet now — running total " + fmt(S.longQuietNet) : "The Long Quiet begins in 2714 — be lean before it lands"), done: S.longQuietDone && S.longQuietNet > 0, reward: "Pays " + fmt(2500) + " + 5 reputation", honor: false },
     { id: "nw30", name: "Established House — net worth " + fmt(30000), prog: fmt(nw) + " / " + fmt(30000), done: nw >= 30000, reward: "Pays " + fmt(1500), honor: false },
     { id: "nw60", name: "The Charter Prize — net worth " + fmt(60000), prog: fmt(nw) + " / " + fmt(60000), done: nw >= 60000, reward: "Honorary — the founders' prize itself", honor: true },
@@ -1069,7 +1108,7 @@ function cabinetHtml() {
   else html += '<div class="cabinet">' + S.trophies.map(function (t) {
     return '<div class="trophy-card"><div class="tcat">★ ' + esc(t.cat) + ' — Expo ' + t.year + '</div><div style="font-weight:700">' + esc(t.model) + '</div></div>';
   }).join("") + '</div>';
-  html += '<h3 style="margin-top:12px">Standing Ambitions — the board\'s goals for Corvane</h3><div class="cabinet">' +
+  html += '<h3 style="margin-top:12px">Standing Ambitions — the board\'s goals for ' + esc(firmName()) + '</h3><div class="cabinet">' +
     goalsList().map(function (g) {
       var claimed = !!S.goalsClaimed[g.id];
       return '<div class="goal' + (claimed ? " done" : "") + '"><div class="ghead"><span>' + (claimed ? "✓ " : "") + esc(g.name) + '</span><span class="reward' + (g.honor ? " honor" : "") + '">' + esc(g.reward) + '</span></div>' +
@@ -1079,6 +1118,7 @@ function cabinetHtml() {
 }
 /* ================= RENDER ================= */
 function render() {
+  if (S && !S.firmName) S.firmName = DEFAULT_FIRM_NAME;
   renderHud(); renderNav(); renderBoard(); renderRivals(); renderMap(); renderSectorDetail(); renderMarket();
   renderDesigner(); renderBlueprints(); renderYards(); renderStock(); renderContracts(); renderNews();
   renderPersonnel(); renderResearch(); renderLoan();
@@ -1111,7 +1151,7 @@ function renderHud() {
   $("hud").innerHTML =
     '<span class="brand">Hull &amp; Havoc</span>' +
     '<span class="ver-badge" title="Game version">' + fmtVer(GAME_VERSION) + '</span>' +
-    '<span class="res"><small>Firm</small> Corvane Consolidated Yards</span>' +
+    '<span class="res"><small>Firm</small> ' + esc(firmName()) + '</span>' +
     '<span class="week">Week ' + d.wk + ' · ' + d.year + '</span>' +
     '<span class="res' + (S.credits < 0 ? " neg" : "") + '"><small>Credits</small> ' + fmt(S.credits) + '</span>' +
     '<span class="res"><small>Alloy</small> ' + S.alloy + '</span>' +
@@ -1119,14 +1159,20 @@ function renderHud() {
     '<span class="res"><small>Research</small> ' + Math.floor(S.rp) + ' RP</span>' +
     '<span class="res"><small>Net worth</small> ' + fmt(nw) + ' / ' + fmt(60000) + '</span>' +
     '<span class="spacer"></span>' +
+    '<button class="hud-restart" id="btnRestartHud" title="Discard this company and start a fresh one">↻ Restart — New Company</button>' +
     '<button class="endweek" id="btnEndWeek">End Week ▸</button>';
   $("btnEndWeek").onclick = endWeek;
+  $("btnRestartHud").onclick = openRestartConfirm;
 }
 function renderBoard() {
   var d = dateOf(), era = eraOf(d.year), nw = netWorth();
   $("boardTag").textContent = dateLabel() + " · charter to " + CHARTER_END_YEAR;
+  var bf = $("boardFirmName"); if (bf) bf.textContent = firmName();
   var lm = S.lastWeek;
-  var html = '<div class="era"><div class="era-name">' + era.name + ' — ' + d.year + '</div><div class="small">' + era.note + '</div></div>';
+  var html = '<div class="firmbar"><span class="flabel">Your firm</span><span class="fname">' + esc(firmName()) + '</span>' +
+    '<span style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap"><button class="btn mini" id="btnRenameBoard">✎ Rename</button>' +
+    '<button class="btn mini danger" id="btnRestartBoard">↻ Restart — New Company</button></span></div>';
+  html += '<div class="era"><div class="era-name">' + era.name + ' — ' + d.year + '</div><div class="small">' + era.note + '</div></div>';
   html += '<div class="headline"><small>The Corvane Gazette — ' + dateLabel() + '</small>' + esc(S.lastHeadline || "SHIPWRIGHTS' GUILD FORMED AT CORVANE — A NEW YARD ENTERS THE TRADE") + '</div>';
   html += '<dl class="kv">' +
     '<dt>Net worth</dt><dd>' + fmt(nw) + ' of ' + fmt(60000) + ' goal<div class="goalbar"><i style="width:' + clamp(nw / 600, 0, 100) + '%"></i></div></dd>' +
@@ -1152,6 +1198,8 @@ function renderBoard() {
   html += cabinetHtml();
   html += timelineHtml();
   $("boardMain").innerHTML = html;
+  $("btnRenameBoard").onclick = openRenameFirm;
+  $("btnRestartBoard").onclick = openRestartConfirm;
 }
 function shareRow(label, rev, total, you) {
   var pct = total > 0 ? Math.round(rev / total * 100) : 0;
@@ -1161,7 +1209,7 @@ function renderRivals() {
   var total = S.cumPlayerRev + S.rivals.reduce(function (a, r) { return a + r.cumRev; }, 0);
   var html = "";
   if (!total) html += '<p class="muted small">No firm has booked a sale yet. The first week\'s report will set the table.</p>';
-  html += shareRow("Corvane Consolidated (you)", S.cumPlayerRev, total, true);
+  html += shareRow(firmName() + " (you)", S.cumPlayerRev, total, true);
   S.rivals.forEach(function (r) { html += shareRow(r.name, r.cumRev, total, false); });
   html += '<table class="report" style="margin-top:10px"><tr><th>Rival</th><th class="num">Last wk.</th><th class="num">Revenue</th><th class="num">All-time</th></tr>' +
     S.rivals.map(function (r) {
@@ -1264,7 +1312,7 @@ function renderSectorDetail() {
     '<dt>Faction</dt><dd>' + FACTIONS[sec.faction] + '</dd>' +
     '<dt>Status</dt><dd><span class="badge ' + sec.status + '">' + sec.status + '</span>' + (sec.surge ? ' <span class="pill">' + sec.surge.type + ' surge — ' + sec.surge.weeks + ' wk left</span>' : '') + '</dd>' +
     '<dt>Specialty</dt><dd>' + specName + (specNote ? ' <span class="muted">(' + specNote + ')</span>' : '') + '</dd>' +
-    '<dt>Relationship</dt><dd><strong>' + relWord(relOf(sec.id).score) + '</strong> — ' + Math.round(relOf(sec.id).score) + ' / 100 with Corvane' +
+    '<dt>Relationship</dt><dd><strong>' + relWord(relOf(sec.id).score) + '</strong> — ' + Math.round(relOf(sec.id).score) + ' / 100 with ' + esc(firmName()) +
       '<span class="relbar"><i style="width:' + clamp(relOf(sec.id).score, 0, 100) + '%"></i></span>' +
       '<span class="muted small">' + relOf(sec.id).delivered + ' contract deliveries · ' + relOf(sec.id).sales + ' showroom sales · ' + relOf(sec.id).missed + ' missed/expired — warm sectors accept higher prices and send richer offers; cold ones stall.</span></dd>' +
     '<dt>Current taste</dt><dd><span class="pill free">' + TASTES[relOf(sec.id).taste].name + '</span> <span class="muted small">' + TASTES[relOf(sec.id).taste].note + (relOf(sec.id).tasteWeeks > 0 ? ' (' + relOf(sec.id).tasteWeeks + ' wk left)' : '') + '</span></dd>' +
@@ -1682,7 +1730,7 @@ function renderResearch() {
       var t = techById(b.getAttribute("data-research"));
       if (!t || S.tech[t.id] || S.rp < effCost(t) || dateOf().year < t.year || (t.req && !S.tech[t.req])) return;
       S.rp -= effCost(t); S.tech[t.id] = true;
-      if (!S.rivalPatented[t.id] && !S.patents[t.id]) { S.patents[t.id] = true; logNews("PATENT GRANTED: Corvane Consolidated patents " + t.name + ". Rival yards now pay ₡9/wk to build under licence."); flash("Patent granted on " + t.name + " — licensing income starts this week."); }
+      if (!S.rivalPatented[t.id] && !S.patents[t.id]) { S.patents[t.id] = true; logNews("PATENT GRANTED: " + firmName() + " patents " + t.name + ". Rival yards now pay ₡9/wk to build under licence."); flash("Patent granted on " + t.name + " — licensing income starts this week."); }
       logNews("Research complete: " + t.name + ". The Design Office and the yards have the new drawings.");
       flash("Researched: " + t.name + " — now available across the firm.");
       render();
@@ -1836,18 +1884,18 @@ var DECISION_DEFS = [
         run: function () { allForemen(function (fm) { fm.morale = clamp(fm.morale - 20, 0, 100); }); return "DECISION — FOREMEN'S RAISE REFUSED: the sheet was folded away in silence. Foreman morale fell on every line; pace will tell the story."; } }
     ] },
   { id: "blockade", title: "A buyer who does not sign his name", cond: function () { return true; },
-    text: function () { return "Through three intermediaries comes an offer: hulls delivered into <strong>Emberfall</strong> despite the blockade politics, at a smuggler's premium — <strong>" + fmt(2600) + "</strong> in unmarked credit, if a delivery 'happens' to get through. Customs is underfunded, not blind: if a Corvane hull is caught running the line, the fine is " + fmt(1700) + " and every broadsheet in the Core will know the yard's name."; },
+    text: function () { return "Through three intermediaries comes an offer: hulls delivered into <strong>Emberfall</strong> despite the blockade politics, at a smuggler's premium — <strong>" + fmt(2600) + "</strong> in unmarked credit, if a delivery 'happens' to get through. Customs is underfunded, not blind: if a " + firmName() + " hull is caught running the line, the fine is " + fmt(1700) + " and every broadsheet in the Core will know the yard's name."; },
     options: [
       { label: "Run the blockade", desc: function () { return "Roughly two chances in three it lands clean: +" + fmt(2600) + ". Caught: −" + fmt(1700) + " fine, −10 reputation, Emberfall cools on you."; }, can: function () { return true; },
-        run: function () { if (Math.random() < 0.65) { S.credits += 2600; S.rep = clamp(S.rep + 2, 0, 100); return "DECISION — BLOCKADE RUN: a Corvane hull slipped the Emberfall line in the dark and came home " + fmt(2600) + " richer. Nobody official saw anything."; } var rel = relOf("emberfall"); rel.score = clamp(rel.score - 8, 0, 100); S.credits -= 1700; S.rep = clamp(S.rep - 10, 0, 100); return "DECISION — BLOCKADE RUN, CAUGHT: customs took the hull at the Emberfall line. Fine " + fmt(1700) + ", reputation down to " + S.rep + ", and Emberfall's factors are cold."; } },
+        run: function () { if (Math.random() < 0.65) { S.credits += 2600; S.rep = clamp(S.rep + 2, 0, 100); return "DECISION — BLOCKADE RUN: a " + firmName() + " hull slipped the Emberfall line in the dark and came home " + fmt(2600) + " richer. Nobody official saw anything."; } var rel = relOf("emberfall"); rel.score = clamp(rel.score - 8, 0, 100); S.credits -= 1700; S.rep = clamp(S.rep - 10, 0, 100); return "DECISION — BLOCKADE RUN, CAUGHT: customs took the hull at the Emberfall line. Fine " + fmt(1700) + ", reputation down to " + S.rep + ", and Emberfall's factors are cold."; } },
       { label: "Comply with the decree", desc: function () { return "The yards stay legal and the name stays clean: +4 reputation, and Emberfall remembers who behaved."; }, can: function () { return true; },
-        run: function () { S.rep = clamp(S.rep + 4, 0, 100); var rel = relOf("emberfall"); rel.score = clamp(rel.score + 4, 0, 100); return "DECISION — BLOCKADE COMPLIED: Corvane publicly honoured the Emberfall decree. Reputation rose to " + S.rep + "; lawful buyers noticed."; } }
+        run: function () { S.rep = clamp(S.rep + 4, 0, 100); var rel = relOf("emberfall"); rel.score = clamp(rel.score + 4, 0, 100); return "DECISION — BLOCKADE COMPLIED: " + firmName() + " publicly honoured the Emberfall decree. Reputation rose to " + S.rep + "; lawful buyers noticed."; } }
     ] },
   { id: "pirate_bounty", title: "The convoy captains' petition", cond: function () { return S.pirates > 0; },
     text: function () { return "With raiders working the lanes, the convoy captains petition the board: fund a <strong>private escort bounty (" + fmt(900) + ")</strong> and the lanes clear measurably sooner — or save the money and let insurance and luck sort it out."; },
     options: [
       { label: "Fund the escorts", desc: function () { return "Pay " + fmt(900) + ". Pirate pressure eases at once; the lanes remember who paid."; }, can: function () { return S.credits >= 900; },
-        run: function () { S.credits -= 900; S.pirates = Math.max(0, S.pirates - 8); S.rep = clamp(S.rep + 2, 0, 100); return "DECISION — ESCORT BOUNTY FUNDED: Corvane money put guns on the lanes, and pirate pressure eased (" + S.pirates + " wk of activity left)."; } },
+        run: function () { S.credits -= 900; S.pirates = Math.max(0, S.pirates - 8); S.rep = clamp(S.rep + 2, 0, 100); return "DECISION — ESCORT BOUNTY FUNDED: " + firmName() + " money put guns on the lanes, and pirate pressure eased (" + S.pirates + " wk of activity left)."; } },
       { label: "Let the lanes fend for themselves", desc: function () { return "No cost. The raiders, encouraged, work the lanes longer."; }, can: function () { return true; },
         run: function () { S.pirates += 4; return "DECISION — ESCORTS REFUSED: the petition was tabled, and the raiders heard about it. Pirate activity will run " + S.pirates + " more weeks."; } }
     ] },
@@ -1910,7 +1958,7 @@ function buildWhy(report) {
     var cheapest = null;
     S.rivals.forEach(function (r) { if (r.design && (!cheapest || r.design.price < cheapest.price)) cheapest = { firm: r.name, model: r.design.label, price: r.design.price }; });
     if (cheapest && cheapest.price < m.ask) why.push(m.model + " was turned away at " + m.sector + ": " + cheapest.firm + "'s " + cheapest.model + " is on offer at " + fmt(cheapest.price) + " — " + fmt(m.ask - cheapest.price) + " under your asking price, and buyers there did the arithmetic.");
-    else why.push(m.model + " sat unsold at " + m.sector + " — asking " + fmt(m.ask) + " against a market value of " + fmt(m.value) + (m.tasteMatch ? "; it matched local taste, but the sector's standing with Corvane (" + m.rel + "/100) is not yet warm enough to carry a premium ask." : ", and it is not what that sector currently wants — check its taste on the sector card."));
+    else why.push(m.model + " sat unsold at " + m.sector + " — asking " + fmt(m.ask) + " against a market value of " + fmt(m.value) + (m.tasteMatch ? "; it matched local taste, but the sector's standing with " + firmName() + " (" + m.rel + "/100) is not yet warm enough to carry a premium ask." : ", and it is not what that sector currently wants — check its taste on the sector card."));
     if (report.misses.length > 1) why.push(report.misses.length + " showroom approaches in all ended without a signature this week — price and taste, between them, did it.");
   }
   var keys = Object.keys(report.salesByModel || {});
@@ -1922,7 +1970,7 @@ function buildWhy(report) {
   var drags = [["crew wages", report.expWages], ["department salaries", report.expStaff], ["research funding", report.expRes], ["advertising", report.expMkt], ["loan payments", report.expLoan || 0]];
   drags.sort(function (a, b) { return b[1] - a[1]; });
   if (drags[0][1] > 0) why.push("The biggest drag was " + drags[0][0] + " at " + fmt(drags[0][1]) + " — " + (drags[0][0] === "crew wages" ? "headcount and pay grade, set yard by yard in Assembly, are the firm's largest weekly commitment." : drags[0][0] === "research funding" ? "the lab is eating first; that is a bet on future eras, not this week's hulls." : drags[0][0] === "advertising" ? "bought attention is only worth it where showrooms are stocked to receive it." : "a fixed cost that sales must outrun every single week."));
-  if (report.licensing) why.push("Patent licensing quietly added " + fmt(report.licensing) + " — rivals are paying rent on Corvane ideas.");
+  if (report.licensing) why.push("Patent licensing quietly added " + fmt(report.licensing) + " — rivals are paying rent on " + firmName() + " ideas.");
   why = why.slice(0, 5);
   if (!why.length) why.push("A steady week — no single cause dominated: prices, demand, tastes, and relationships all held their line.");
   S.whyFlags = [];
@@ -2014,7 +2062,7 @@ function endWeek() {
         if (c.delivered >= c.count) {
           S.active = S.active.filter(function (x) { return x.id !== c.id; });
           S.contractsCompleted += 1; relOf(t.dest).score = clamp(relOf(t.dest).score + 8, 0, 100);
-          report.lines.push("CONTRACT COMPLETE: " + c.buyer + " is fully supplied. Your name travels well — and " + sectorById(t.dest).name + "'s standing with Corvane warms to " + Math.round(relOf(t.dest).score) + ".");
+          report.lines.push("CONTRACT COMPLETE: " + c.buyer + " is fully supplied. Your name travels well — and " + sectorById(t.dest).name + "'s standing with " + firmName() + " warms to " + Math.round(relOf(t.dest).score) + ".");
           logNews("Contract complete for " + c.buyer + ".");
         }
         return;
@@ -2102,7 +2150,7 @@ function endWeek() {
     var intPart = Math.round(pay * S.loan.interestShare);
     S.loan.balance -= pay; report.expLoan = pay;
     report.lines.push("Loan desk: payment of " + fmt(pay) + " made (interest portion " + fmt(intPart) + "). Balance remaining: " + fmt(S.loan.balance) + ".");
-    if (S.loan.balance <= 0) { S.loan = null; report.lines.push("LOAN CLEARED: the Office loan desk stamps the note PAID IN FULL."); logNews("Corvane Consolidated cleared its yard loan in full."); }
+    if (S.loan.balance <= 0) { S.loan = null; report.lines.push("LOAN CLEARED: the Office loan desk stamps the note PAID IN FULL."); logNews(firmName() + " cleared its yard loan in full."); }
   }
   var expenses = report.expWages + report.expUpkeep + report.expStaff + report.expMkt + report.expRes + report.expLoan;
   S.credits -= expenses;
@@ -2131,7 +2179,7 @@ function endWeek() {
   if (S.longQuietUntil && S.turn < S.longQuietUntil) { S.longQuietWasActive = true; S.longQuietNet += report.revenue - expenses; }
   if (S.longQuietWasActive && S.longQuietUntil && S.turn >= S.longQuietUntil && !S.longQuietDone) {
     S.longQuietDone = true;
-    report.lines.push("THE LONG QUIET LIFTS. Corvane's running total through the depression: " + fmt(S.longQuietNet) + (S.longQuietNet > 0 ? " ahead — the ambition is the board's to mark." : " behind — survival itself was the achievement."));
+    report.lines.push("THE LONG QUIET LIFTS. " + firmName() + "'s running total through the depression: " + fmt(S.longQuietNet) + (S.longQuietNet > 0 ? " ahead — the ambition is the board's to mark." : " behind — survival itself was the achievement."));
   }
 
   /* Research accrues */
@@ -2144,8 +2192,8 @@ function endWeek() {
   var expired = S.active.filter(function (c) { return S.turn > c.deadline; });
   expired.forEach(function (c) {
     var relE = relOf(c.sector); relE.missed += 1; relE.score = clamp(relE.score - 12, 0, 100);
-    report.lines.push("CONTRACT EXPIRED: " + c.buyer + " cancelled the remaining order (" + c.delivered + "/" + c.count + " delivered). " + sectorById(c.sector).name + "'s standing with Corvane falls to " + Math.round(relE.score) + ".");
-    if (relE.score < 25) report.lines.push(sectorById(c.sector).name + " has stopped answering Corvane's calls — the factors there will take time, and kept promises, to win back.");
+    report.lines.push("CONTRACT EXPIRED: " + c.buyer + " cancelled the remaining order (" + c.delivered + "/" + c.count + " delivered). " + sectorById(c.sector).name + "'s standing with " + firmName() + " falls to " + Math.round(relE.score) + ".");
+    if (relE.score < 25) report.lines.push(sectorById(c.sector).name + " has stopped answering " + firmName() + "'s calls — the factors there will take time, and kept promises, to win back.");
     logNews(c.buyer + " cancelled an unfilled contract.");
   });
   S.active = S.active.filter(function (c) { return S.turn <= c.deadline; });
@@ -2175,9 +2223,9 @@ function endWeek() {
   var nw = netWorth();
   if (!S.won && nw >= 60000) {
     S.won = true;
-    report.lines.push("★ MILESTONE: Net worth passed " + fmt(60000) + ". Corvane Consolidated is now the galaxy's premier shipwright.");
-    logNews("Corvane Consolidated Yards named the galaxy's premier shipwright.");
-    S.lastHeadline = "CORVANE CONSOLIDATED NAMED THE GALAXY'S PREMIER SHIPWRIGHT";
+    report.lines.push("★ MILESTONE: Net worth passed " + fmt(60000) + ". " + firmName() + " is now the galaxy's premier shipwright.");
+    logNews(firmName() + " named the galaxy's premier shipwright.");
+    S.lastHeadline = firmName().toUpperCase() + " NAMED THE GALAXY'S PREMIER SHIPWRIGHT";
   }
   if (dateOf().year >= CHARTER_END_YEAR && !S.charterShown) S.charterPending = true;
 
@@ -2233,7 +2281,7 @@ function showReport(report, share, rivalRevTotal, nw, rpGain) {
     (report.lines.length ? report.lines : ["A quiet week. The yards hum, the lanes run, nothing exploded."]).map(function (l) { return "<li>" + esc(l) + "</li>"; }).join("") + '</ul>';
   if (report.why && report.why.length) body += '<h3 style="margin:10px 0 4px">Why the week went that way</h3><ul>' + report.why.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + '</ul>';
   body += '<h3 style="margin:10px 0 4px">Market share — revenue</h3>' +
-    shareRow("Corvane Consolidated (you)", report.revenue, report.revenue + rivalRevTotal, true) +
+    shareRow(firmName() + " (you)", report.revenue, report.revenue + rivalRevTotal, true) +
     S.rivals.map(function (r) { return shareRow(r.name, r.lastRev, report.revenue + rivalRevTotal, false); }).join("");
   $("ledgerBody").innerHTML = body;
   var expenses = report.expWages + report.expUpkeep + report.expStaff + report.expMkt + report.expRes + report.expLoan;
@@ -2242,6 +2290,41 @@ function showReport(report, share, rivalRevTotal, nw, rpGain) {
     "<br>Outgoings: −" + fmt(expenses) + " (wages " + fmt(report.expWages) + " · upkeep " + fmt(report.expUpkeep) + " · staff " + fmt(report.expStaff) + " · advertising " + fmt(report.expMkt) + " · research " + fmt(report.expRes) + (report.expLoan ? " · loan " + fmt(report.expLoan) : "") + ")" +
     "<br>Credits: " + fmt(S.credits) + " · Alloy: " + S.alloy + " · Components: " + S.components + " · Net worth: " + fmt(nw) + " / " + fmt(60000) + " · Market share: " + share + "%";
   $("ledgerBackdrop").classList.add("open");
+}
+/* ================= RESTART & RENAME (v1.201) ================= */
+function startNewCompany(fromAshes) {
+  ["overBackdrop", "restartBackdrop", "renameBackdrop", "ledgerBackdrop", "charterBackdrop", "decisionBackdrop"].forEach(function (id) { var el = $(id); if (el) el.classList.remove("open"); });
+  newGame();
+  ui.sector = "corvane"; ui.shipDest = {}; ui.test = null; ui.view = "board"; ui.refit = {};
+  ui.design = { size: "corvette", hull: "wedge", engine: "standard", weapon: "laser", name: "", ver: GAME_VERSION, price: null, appeal: null };
+  VIEWS.forEach(function (v) { $("view-" + v.id).classList.toggle("active", v.id === "board"); });
+  render();
+  flash((fromAshes ? "A new company rises from the ashes \u2014 " : "New company founded \u2014 ") + fmtVer(GAME_VERSION) + ", Week 1 \u00b7 2708. " + firmName() + " opens with \u20a115,000, 60 alloy and 40 components. Good luck, shipwright.");
+}
+function openRestartConfirm() {
+  var d = dateOf();
+  $("restartBody").innerHTML = "Your current company, <strong>" + esc(firmName()) + "</strong> \u2014 currently at <strong>Week " + d.wk + " \u00b7 " + d.year + "</strong> with " + fmt(S.credits) + ", " + S.blueprints.length + " design(s), " + S.yards.length + " yard(s) and " + S.trophies.length + " Expo troph" + (S.trophies.length === 1 ? "y" : "ies") + " \u2014 <strong>all of it</strong> will be replaced by a fresh company starting at Week 1 \u00b7 2708 with \u20a115,000, 60 alloy, 40 components and the two starter designs.";
+  $("restartBackdrop").classList.add("open");
+}
+function openRenameFirm() {
+  $("inpFirmName").value = firmName();
+  $("renameErr").textContent = "";
+  $("renameBackdrop").classList.add("open");
+  $("inpFirmName").focus();
+  $("inpFirmName").select();
+}
+function saveRenameFirm() {
+  var name = $("inpFirmName").value.trim().slice(0, 40).trim();
+  if (!name) {
+    $("renameErr").textContent = "A firm name can\u2019t be blank \u2014 the old name, \u201c" + firmName() + "\u201d, stays on the door.";
+    flash("Rename cancelled: a firm name can\u2019t be blank, so \u201c" + firmName() + "\u201d stays.", true);
+    return;
+  }
+  var old = firmName();
+  S.firmName = name;
+  $("renameBackdrop").classList.remove("open");
+  render();
+  flash(old === name ? "Firm name unchanged \u2014 still \u201c" + name + "\u201d." : "Firm renamed: \u201c" + old + "\u201d is now \u201c" + name + "\u201d. The new name is on the door, the header and the books.");
 }
 /* ================= INIT ================= */
 function wireDesigner() {
@@ -2280,15 +2363,14 @@ function wireDesigner() {
     }
   };
   $("btnCharterContinue").onclick = function () { $("charterBackdrop").classList.remove("open"); };
-  $("btnRestart").onclick = function () {
-    $("overBackdrop").classList.remove("open");
-    newGame();
-    ui.sector = "corvane"; ui.shipDest = {}; ui.test = null; ui.view = "board";
-    ui.design = { size: "corvette", hull: "wedge", engine: "standard", weapon: "laser", name: "", ver: GAME_VERSION, price: null, appeal: null };
-    VIEWS.forEach(function (v) { $("view-" + v.id).classList.toggle("active", v.id === "board"); });
-    render();
-    flash("A new company rises from the ashes — " + fmtVer(GAME_VERSION) + ", Week 1 · 2708. Good luck, shipwright.");
-  };
+  $("btnRestart").onclick = function () { startNewCompany(true); };
+  $("btnRestartCancel").onclick = function () { $("restartBackdrop").classList.remove("open"); };
+  $("btnRestartConfirm").onclick = function () { startNewCompany(false); };
+  $("btnRenameCancel").onclick = function () { $("renameBackdrop").classList.remove("open"); };
+  $("btnRenameSave").onclick = saveRenameFirm;
+  $("inpFirmName").onkeydown = function (ev) { if (ev.key === "Enter") { ev.preventDefault(); saveRenameFirm(); } if (ev.key === "Escape") $("renameBackdrop").classList.remove("open"); };
+  $("restartBackdrop").onclick = function (ev) { if (ev.target === this) this.classList.remove("open"); };
+  $("renameBackdrop").onclick = function (ev) { if (ev.target === this) this.classList.remove("open"); };
 }
 var RIVAL_MODELS = ["Ravager", "Pike", "Sentinel", "Dart", "Comet-Kite", "Bastion", "Haulier", "Lance", "Tern", "Vandal", "Cutter", "Mastiff", "Osprey", "Glaive"];
 var LOAN_OFFERS = [
@@ -2360,7 +2442,7 @@ function expoCheck(report) {
   var wins = 0;
   cats.forEach(function (cat) {
     var best = null;
-    S.blueprints.forEach(function (bp) { var sc = cat.score(bp); if (sc > 0 && (!best || sc > best.sc)) best = { sc: sc, firm: "Corvane Consolidated", model: designLabel(bp), you: true }; });
+    S.blueprints.forEach(function (bp) { var sc = cat.score(bp); if (sc > 0 && (!best || sc > best.sc)) best = { sc: sc, firm: firmName(), model: designLabel(bp), you: true }; });
     S.rivals.forEach(function (r) {
       if (!r.design) r.design = genRivalDesign(r);
       var rd = { name: r.design.name, size: r.design.size, hull: r.design.hull, engine: r.design.engine, weapon: r.design.weapon, price: r.design.price, appeal: r.design.appeal, ver: GAME_VERSION };
@@ -2375,7 +2457,7 @@ function expoCheck(report) {
   if (wins > 0) {
     S.rep = clamp(S.rep + wins * 5, 0, 100);
     S.lastHeadline = "EXPO GLORY AT CORVANE — " + wins + " TROPH" + (wins > 1 ? "IES" : "Y") + " FOR THE HOME YARDS";
-    report.lines.push("EXPO VERDICT: " + wins + " troph" + (wins > 1 ? "ies" : "y") + " for Corvane. Reputation rises to " + S.rep + " — buyers will lean a little further on price for a name with silverware.");
+    report.lines.push("EXPO VERDICT: " + wins + " troph" + (wins > 1 ? "ies" : "y") + " for " + firmName() + ". Reputation rises to " + S.rep + " — buyers will lean a little further on price for a name with silverware.");
   } else {
     S.rep = clamp(S.rep - 2, 0, 100);
     report.lines.push("EXPO VERDICT: the trophies went elsewhere this year. Reputation slips to " + S.rep + " — next year's catalogue is the answer.");
@@ -2406,7 +2488,7 @@ function renderLoan() {
       '<p class="small muted">The desk holds one facility at a time. Miss nothing: payments leave automatically each week, before you see the report.</p>';
     $("btnPayoff").onclick = function () {
       S.credits -= S.loan.balance;
-      logNews("Corvane Consolidated paid off the " + S.loan.label + " early. The loan desk stamps it PAID IN FULL.");
+      logNews(firmName() + " paid off the " + S.loan.label + " early. The loan desk stamps it PAID IN FULL.");
       flash("Loan paid off in full — " + fmt(S.loan.balance) + ". The desk is clear.");
       S.loan = null;
       render();
@@ -2476,7 +2558,9 @@ function doRefit(shipId) {
 /* Hull & Havoc — phone persistence (added by build_phone.py; not in the master).
    Save key 'hull-and-havoc-save-v1', save field ver:1. The game holds state in
    the globals S / ui / uidCounter and repaints via render(); we persist after
-   every repaint and restore on boot before the player touches anything. */
+   every repaint and restore on boot before the player touches anything.
+   Restores pass through normSave() below, which backfills fields that newer
+   game builds added (and read unguarded) into saves written by older ones. */
 (function () {
   var KEY = 'hull-and-havoc-save-v1';
   function persist() {
@@ -2491,6 +2575,74 @@ function doRefit(shipId) {
       Array.isArray(d.S.blueprints) && Array.isArray(d.S.yards) &&
       typeof d.uid === 'number' && isFinite(d.uid) && d.uid >= 1;
   }
+  /* Cross-version backfill (the Argus norm() pattern): a save written by a
+     build older than v1.200 lacks the fields that build added — firmName,
+     relations, goalsClaimed, contractsCompleted, the Long Quiet counters,
+     engineerGoneUntil / overtimeUntil, whyFlags, decisionNote,
+     pendingDecision / nextDecisionTurn, staff, and yard foremen. The v1.200+
+     game reads several of them unguarded (cabinetHtml/checkGoals index
+     S.goalsClaimed[...] directly and throw on undefined), so restoring an
+     old save unrestored-but-unbackfilled breaks every render. normSave fills
+     ONLY absent or wrong-typed fields, with the game's own newGame()
+     defaults, and never overwrites a value the save already carries — a
+     current-version save passes through unchanged (in particular a
+     legitimately null staff.engineer after a poach, where the 'staff' key
+     exists, is left alone; staff/foreman are synthesised only when the key
+     is entirely absent, i.e. the save predates the named-staff system). */
+  function gamePickName() {
+    try {
+      if (typeof window.pick === 'function' && Array.isArray(window.FIRST_NAMES) && Array.isArray(window.LAST_NAMES)) {
+        return window.pick(window.FIRST_NAMES) + ' ' + window.pick(window.LAST_NAMES);
+      }
+    } catch (e) {}
+    return 'Sam Reyes';
+  }
+  function gameSkill() {
+    try { if (typeof window.ri === 'function') return window.ri(2, 5); } catch (e) {}
+    return 3;
+  }
+  function normSave(s) {
+    if (typeof s.firmName !== 'string' || !s.firmName) s.firmName = 'Corvane Consolidated Yards';
+    if (!s.relations || typeof s.relations !== 'object') s.relations = {};
+    if (s.sectors && typeof s.sectors === 'object') {
+      Object.keys(s.sectors).forEach(function (id) {
+        var r = s.relations[id];
+        if (!r || typeof r !== 'object') {
+          s.relations[id] = { score: 50, taste: 'balanced', tasteWeeks: 0, sales: 0, missed: 0, delivered: 0, lastSaleTurn: 1 };
+        } else {
+          if (typeof r.score !== 'number') r.score = 50;
+          if (typeof r.taste !== 'string') r.taste = 'balanced';
+          if (typeof r.tasteWeeks !== 'number') r.tasteWeeks = 0;
+          if (typeof r.sales !== 'number') r.sales = 0;
+          if (typeof r.missed !== 'number') r.missed = 0;
+          if (typeof r.delivered !== 'number') r.delivered = 0;
+          if (typeof r.lastSaleTurn !== 'number') r.lastSaleTurn = 1;
+        }
+      });
+    }
+    if (!s.goalsClaimed || typeof s.goalsClaimed !== 'object') s.goalsClaimed = {};
+    if (typeof s.contractsCompleted !== 'number') s.contractsCompleted = 0;
+    if (typeof s.longQuietNet !== 'number') s.longQuietNet = 0;
+    if (typeof s.longQuietDone !== 'boolean') s.longQuietDone = false;
+    if (typeof s.longQuietWasActive !== 'boolean') s.longQuietWasActive = false;
+    if (typeof s.engineerGoneUntil !== 'number') s.engineerGoneUntil = 0;
+    if (typeof s.overtimeUntil !== 'number') s.overtimeUntil = 0;
+    if (!Array.isArray(s.whyFlags)) s.whyFlags = [];
+    if (typeof s.decisionNote !== 'string') s.decisionNote = '';
+    if (!('pendingDecision' in s)) s.pendingDecision = null;
+    if (typeof s.nextDecisionTurn !== 'number') s.nextDecisionTurn = (typeof s.turn === 'number' ? s.turn : 1) + 4;
+    if (!('staff' in s)) {
+      s.staff = { engineer: { name: gamePickName(), skill: gameSkill(), salary: 65, morale: 72 } };
+    }
+    if (Array.isArray(s.yards)) {
+      s.yards.forEach(function (y) {
+        if (y && typeof y === 'object' && !('foreman' in y)) {
+          y.foreman = { name: gamePickName(), skill: gameSkill(), salary: 48, morale: 70 };
+        }
+      });
+    }
+    return s;
+  }
   /* Restore: the game script has already run newGame() + render() once. */
   try {
     var raw = localStorage.getItem(KEY);
@@ -2498,7 +2650,7 @@ function doRefit(shipId) {
       var data = null;
       try { data = JSON.parse(raw); } catch (e) { data = null; }
       if (validSave(data)) {
-        window.S = data.S;
+        window.S = normSave(data.S);
         window.uidCounter = data.uid;
         if (data.ui && typeof data.ui === 'object') window.ui = data.ui;
         if (window.VIEWS && window.ui) {
