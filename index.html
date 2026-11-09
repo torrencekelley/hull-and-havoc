@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="color-scheme" content="light dark" />
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
-    <title>Hull &amp; Havoc v1.201 — a Detroit-style starship tycoon</title>
+    <title>Hull &amp; Havoc v1.202 — a Detroit-style starship tycoon</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -239,6 +239,119 @@
       .decopt strong { display: block; font-size: 16px; }
       .decopt span { color: var(--muted); font-weight: 600; font-size: 14px; }
       .shipstage { box-shadow: inset 0 0 42px rgba(0,0,0,.35); }
+      /* ---------- v1.202: sales-floor pricing, cost/margin, haggling ---------- */
+      .cost-strip { display: flex; flex-wrap: wrap; gap: 5px 8px; align-items: center; margin-top: 7px; background: var(--chip); border: 1px solid var(--line); border-radius: 7px; padding: 6px 9px; font-weight: 700; font-size: 14px; }
+      .cost-strip .cs-label { font-size: 11px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+      .cost-strip .margin-good { color: var(--green); }
+      .cost-strip .margin-bad { color: var(--red); }
+      .cost-strip .margin-zero { color: var(--amber); }
+      .price-editor { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 7px; }
+      .price-editor label { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+      .price-editor input[type="number"] { width: 118px; flex: 0 0 118px; padding: 6px 8px; }
+      .floorbar { border: 1px solid var(--accent); border-radius: 8px; padding: 9px 11px; margin-bottom: 10px; background: color-mix(in srgb, var(--accent) 6%, var(--panel2)); }
+      .floorbar .fb-row { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; margin-top: 6px; }
+      .floorbar .fb-row:first-of-type { margin-top: 2px; }
+      .floorbar input[type="number"] { width: 118px; flex: 0 0 118px; padding: 6px 8px; }
+      .offer-card { border: 1px solid var(--amber); border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; background: color-mix(in srgb, var(--amber) 6%, var(--panel2)); }
+      .offer-card .ohead { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+      .offer-card .buyer { font-weight: 700; font-size: 16.5px; }
+      .haggle-log { list-style: none; margin: 8px 0 0; padding: 8px 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 7px; font-size: 14px; }
+      .haggle-log li { padding: 3px 0; border-bottom: 1px dashed var(--line); font-weight: 600; }
+      .haggle-log li:last-child { border-bottom: none; }
+      .haggle-log .who { font-weight: 700; color: var(--accent); }
+      .haggle-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 9px; }
+      .haggle-actions input[type="number"] { width: 128px; flex: 0 0 128px; padding: 6px 8px; }
+      .offer-figures { display: flex; flex-wrap: wrap; gap: 5px 8px; margin-top: 7px; }
+      .pill.repeat { color: var(--teal); border-color: var(--teal); }
+      .pill.bundle { color: var(--accent); border-color: var(--accent); }
+      .pill.tradein { color: var(--amber); border-color: var(--amber); }
+      .pricewar-banner { border: 1px solid var(--red); border-radius: 8px; padding: 8px 10px; margin: 8px 0; background: color-mix(in srgb, var(--red) 9%, var(--panel2)); font-weight: 700; }
+      .tradein-box { border: 1px dashed var(--amber); border-radius: 7px; padding: 8px 10px; margin-top: 8px; background: var(--panel); }
+
+      /* ---------- v1.202 RESKIN: starship command / showroom interface (CSS only) ---------- */
+      body {
+        background:
+          radial-gradient(1px 1px at 12% 22%, rgba(255,255,255,.6) 50%, transparent 51%),
+          radial-gradient(1px 1px at 68% 8%, rgba(255,255,255,.45) 50%, transparent 51%),
+          radial-gradient(1.5px 1.5px at 84% 34%, rgba(255,255,255,.4) 50%, transparent 51%),
+          radial-gradient(1px 1px at 33% 64%, rgba(255,255,255,.35) 50%, transparent 51%),
+          radial-gradient(1px 1px at 52% 88%, rgba(255,255,255,.4) 50%, transparent 51%),
+          radial-gradient(1px 1px at 24% 44%, rgba(125,240,232,.5) 50%, transparent 51%),
+          radial-gradient(1.5px 1.5px at 91% 72%, rgba(125,240,232,.35) 50%, transparent 51%),
+          radial-gradient(1px 1px at 45% 12%, rgba(255,217,160,.5) 50%, transparent 51%),
+          radial-gradient(2px 2px at 58% 52%, rgba(255,255,255,.28) 50%, transparent 51%),
+          radial-gradient(1px 1px at 6% 82%, rgba(255,255,255,.4) 50%, transparent 51%),
+          radial-gradient(ellipse 900px 420px at 85% -80px, rgba(63,208,201,.10), transparent 65%),
+          radial-gradient(ellipse 700px 380px at 8% 108%, rgba(38,80,160,.16), transparent 65%),
+          linear-gradient(180deg, var(--bg), var(--bg2));
+        background-size: 340px 340px, 420px 420px, 520px 520px, 300px 300px, 460px 460px, 380px 380px, 560px 560px, 480px 480px, 640px 640px, 360px 360px, auto, auto, auto;
+      }
+      @keyframes starDrift { from { background-position: 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0; } to { background-position: 34px 60px, -28px 44px, 18px 80px, -40px 30px, 22px 66px, -16px 52px, 30px 38px, -24px 70px, 12px 48px, -34px 58px, 0 0, 0 0, 0 0; } }
+      @keyframes starTwinkle { 0%, 100% { opacity: 1; } 50% { opacity: .86; } }
+      @media (prefers-color-scheme: dark) {
+        body { animation: starDrift 140s linear infinite; }
+      }
+      @media (prefers-reduced-motion: reduce) { body { animation: none; } }
+      .hud {
+        border-bottom: 2px solid var(--teal);
+        box-shadow: 0 0 0 1px rgba(63,208,201,.12), 0 6px 22px rgba(0,0,0,.35), 0 2px 14px rgba(63,208,201,.18);
+        background-image: linear-gradient(180deg, rgba(63,208,201,.07), transparent 55%), repeating-linear-gradient(0deg, rgba(255,255,255,.022) 0 1px, transparent 1px 3px);
+      }
+      .hud .brand { color: var(--teal); text-shadow: 0 0 12px rgba(63,208,201,.65), 0 0 3px rgba(63,208,201,.8); letter-spacing: .12em; }
+      .ver-badge { box-shadow: 0 0 10px rgba(255,179,64,.5); }
+      .hud .week { border-color: var(--teal); color: var(--teal); box-shadow: inset 0 0 8px rgba(63,208,201,.15); }
+      .res { border-radius: 3px; box-shadow: inset 0 0 0 1px rgba(125,240,232,.06); }
+      .res strong, .hud .res { font-variant-numeric: tabular-nums; }
+      .endweek { border-radius: 4px; box-shadow: 0 0 14px rgba(255,179,64,.45), 0 2px 10px var(--shadow); clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px); }
+      .deptnav button { border-radius: 4px 4px 0 0; }
+      .deptnav button.on { box-shadow: 0 -2px 12px rgba(255,179,64,.35); }
+      .panel {
+        border-radius: 4px;
+        border-color: color-mix(in srgb, var(--teal) 34%, var(--line));
+        background-image:
+          linear-gradient(135deg, rgba(63,208,201,.16) 0 10px, transparent 10px),
+          linear-gradient(315deg, rgba(63,208,201,.10) 0 8px, transparent 8px),
+          linear-gradient(180deg, rgba(63,208,201,.045), transparent 120px),
+          repeating-linear-gradient(0deg, rgba(255,255,255,.014) 0 1px, transparent 1px 4px);
+        background-repeat: no-repeat;
+        background-position: top left, bottom right, top left, top left;
+        box-shadow: 0 3px 14px var(--shadow), inset 0 0 0 1px rgba(125,240,232,.05), 0 0 18px rgba(63,208,201,.06);
+      }
+      .panel h2 { text-shadow: 0 0 8px rgba(63,208,201,.25); }
+      .panel h2::before { content: ""; width: 8px; height: 8px; flex: 0 0 8px; background: var(--teal); clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); box-shadow: 0 0 8px rgba(63,208,201,.8); }
+      .shipitem, .contract, .person, .tech, .yard, .offer-card, .goal, .staffcard { border-radius: 4px; }
+      .btn { border-radius: 4px; }
+      .btn.primary { box-shadow: 0 0 10px rgba(255,179,64,.35); }
+      .offer-card { box-shadow: 0 0 16px rgba(255,201,94,.14), 0 3px 12px var(--shadow); }
+      .cost-strip { border-color: color-mix(in srgb, var(--teal) 40%, var(--line)); box-shadow: inset 0 0 10px rgba(63,208,201,.06); }
+      @media (prefers-color-scheme: light) {
+        .hud .brand { text-shadow: none; }
+        .panel { background-image: linear-gradient(135deg, rgba(14,125,120,.14) 0 10px, transparent 10px), linear-gradient(315deg, rgba(14,125,120,.09) 0 8px, transparent 8px); }
+        .endweek { box-shadow: 0 2px 10px var(--shadow); }
+      }
+      /* ---------- Sales floor showroom backdrop (atmosphere only; panels stay opaque) ---------- */
+      #view-sales {
+        background-image:
+          radial-gradient(ellipse 340px 90px at 18% 120px, rgba(125,240,232,.13), transparent 70%),
+          radial-gradient(ellipse 340px 90px at 55% 105px, rgba(255,217,160,.10), transparent 70%),
+          radial-gradient(ellipse 340px 90px at 86% 130px, rgba(125,240,232,.11), transparent 70%),
+          radial-gradient(ellipse 120px 26px at 22% 300px, rgba(63,208,201,.10), transparent 70%),
+          radial-gradient(ellipse 120px 26px at 62% 330px, rgba(63,208,201,.09), transparent 70%),
+          radial-gradient(ellipse 120px 26px at 88% 290px, rgba(255,179,64,.08), transparent 70%),
+          repeating-linear-gradient(90deg, rgba(125,240,232,.045) 0 1px, transparent 1px 72px),
+          repeating-linear-gradient(0deg, rgba(125,240,232,.035) 0 1px, transparent 1px 72px),
+          linear-gradient(180deg, rgba(63,208,201,.05), transparent 340px),
+          linear-gradient(0deg, rgba(125,240,232,.05), transparent 260px);
+        background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, repeat, repeat, no-repeat, no-repeat;
+        border-radius: 6px;
+      }
+      #view-sales .shipitem {
+        background-image: radial-gradient(ellipse 130px 22px at 60px calc(100% - 12px), rgba(63,208,201,.16), transparent 70%), linear-gradient(180deg, rgba(63,208,201,.05), transparent 60%);
+        background-repeat: no-repeat;
+      }
+      #view-sales .offer-card { background-image: radial-gradient(ellipse 200px 40px at 80px 0, rgba(255,217,160,.12), transparent 70%); background-repeat: no-repeat; }
+      @media (prefers-color-scheme: light) { #view-sales { background-image: radial-gradient(ellipse 340px 90px at 18% 120px, rgba(14,125,120,.07), transparent 70%), repeating-linear-gradient(90deg, rgba(14,125,120,.05) 0 1px, transparent 1px 72px), repeating-linear-gradient(0deg, rgba(14,125,120,.04) 0 1px, transparent 1px 72px); } }
+
       /* ---------- Modal ---------- */
       .backdrop { position: fixed; inset: 0; background: rgba(2,6,14,.72); z-index: 80; display: none; align-items: center; justify-content: center; padding: 16px; }
       .backdrop.open { display: flex; }
@@ -269,7 +382,7 @@
   <body>
     <div class="hud" id="hud"></div>
     <div class="flash" id="flash" role="status"></div>
-    <p class="ver-note"><strong>VERSION 1.201</strong> &nbsp;·&nbsp; A starship tycoon modelled on <strong>Detroit</strong>, the classic automobile-company game: run the firm week by week from your headquarters — design in the Design Office, build on crewed assembly lines, sell through dealerships you plant across the galaxy, hire your department heads, and research the next era's technology before your rivals do. Every ship design still carries the house version system: born <strong>v1.201</strong>, +0.001 at every re-save under the same name.</p>
+    <p class="ver-note"><strong>VERSION 1.202</strong> &nbsp;·&nbsp; A starship tycoon modelled on <strong>Detroit</strong>, the classic automobile-company game: run the firm week by week from your headquarters — design in the Design Office, build on crewed assembly lines, sell through dealerships you plant across the galaxy, hire your department heads, and research the next era's technology before your rivals do. Every ship design still carries the house version system: born <strong>v1.202</strong>, +0.001 at every re-save under the same name. <strong>New in v1.202:</strong> every ship on the sales floor can be repriced at any time — its build cost and profit margin are always on its card — and buyers now walk in with lower offers you can accept, reject, or haggle over.</p>
 
     <nav class="deptnav" id="deptNav" aria-label="Headquarters departments"></nav>
 
@@ -281,6 +394,16 @@
           <li><strong>Design Office:</strong> pick size, hull, engines, weapons — then <strong>set your own asking price</strong>, like Detroit. Price against build cost and market value: greedy prices sit unsold, sharp prices fly off the showroom floor. <strong>Test-fly</strong> a design (₡150) and the trade press will rate it; a good review raises its appeal — re-save to lock the tested spec in as a new version.</li>
           <li><strong>Assembly:</strong> each yard runs assembly lines tooled for one size class. <strong>Crew size and wages are yours to set</strong> — bigger crews build faster, better-paid crews turn out higher-quality ships that sell for more, and every crew is a weekly wage bill.</li>
           <li><strong>Sales &amp; Marketing:</strong> ships don't sell themselves. Open <strong>dealerships</strong> in sectors, stock them by shipping finished ships there, and set a <strong>weekly advertising budget per sector</strong>. Dealerships sell from stock every week at your asking price; no dealership means only passing brokers, at a trickle. A broker will always take a ship off your hands instantly — at 85% of asking.</li>
+          <li><strong>Reprice the floor at any time (v1.202):</strong> every finished ship in <strong>Distribution</strong> carries its own price tag. Change one ship's price, or set a whole model line to one price, whenever you like — no re-save, no new version, no waiting for the week to close. The new price is the price dealerships, brokers, and convoys use from that moment.</li>
+          <li><strong>Cost &amp; margin, always visible:</strong> every sales-floor card shows the ship's <strong>build cost</strong> next to its asking price and the exact <strong>profit margin</strong> (credits and %) you'd make at that price — green when you're ahead, red when a price or an offer would sell the ship at a loss. The same cost and margin are printed on every buyer's offer, so you never haggle blind.</li>
+          <li><strong>Buyers haggle:</strong> buyers walk onto the floor with offers <em>below</em> your asking price — lowballers, steady traders, and desperate buyers who'll budge further. Each offer sits in the <strong>Haggling Table</strong> in Sales &amp; Marketing: <strong>Accept</strong> it for an instant sale at that price, <strong>Reject</strong> it and keep the ship, or <strong>Counter</strong> with your own price. Counter near what the buyer can truly pay and they'll take it; counter in range and they'll meet you partway (up to 3 rounds); counter wildly above it and they walk. Offers expire after 2 weeks, and new ones arrive as the weeks pass — or use <em>Invite a buyer to the floor</em> to drum one up now.</li>
+          <li><strong>Trade-ins:</strong> some haggle offers are part cash, part the buyer's old ship. The card values the trade-in at its estimated market value and shows the <em>full deal</em> (cash + trade-in) against your ship's build cost and margin. Accept, and the trade-in joins your stock in that showroom — an older, ordinary hull in flyable condition (quality below new) that you can price, ship, broker, or <strong>refit</strong> with newer engines and weapons and resell.</li>
+          <li><strong>Price wars:</strong> now and then a rival slashes prices in one sector for a few weeks. While it runs, that sector's card and the Market Pulse name it, and showroom buyers there lean to the rival — your acceptance drops — <em>unless</em> you answer: floor prices at or under market value blunt it, sharp prices (≤90% of value) or heavy advertising (₡250/wk) in that sector nearly cancel it. Wars are announced, and their end is announced, in the news and the Weekly Report.</li>
+          <li><strong>Market Pulse:</strong> the one-line read at the top of Sales &amp; Marketing is computed fresh from real demand, the economy swing, sector tastes, the Long Quiet, and any price war — which role is fetching over or under market value, and which sector is hot or soft right now. Price from it, not blind.</li>
+          <li><strong>Repeat buyers:</strong> deal fairly with a haggling buyer — accept their offer, or close at a counter they can live with — and they remember it. Repeat buyers come back in later weeks wearing a <strong>Repeat buyer</strong> tag: they open closer to your asking price and stay at the table for an extra counter round before walking.</li>
+          <li><strong>Fleet bundles:</strong> sometimes a buyer wants <strong>two ships from the same showroom at once</strong>. A bundle card prices both ships together — combined build cost and combined margin always shown — and the offer is either a small premium over the two asking prices or a haggle just under combined ask. Accept, reject, or counter it as <em>one deal</em>; on a sale, both ships leave stock together.</li>
+          <li><strong>Advertising channels:</strong> beyond the per-sector weekly budget, three space-flavoured channels stack on top of it (set them on each sector's card in Sales): <strong>Subspace Radio</strong> — ₡40/wk for a 4-week run, a modest steady lift to that sector's buyer traffic; <strong>Holovision</strong> — ₡160/wk for a 4 weeks, a big traffic lift in that sector; and a <strong>Celebrity Sponsor</strong> — a named holostar, racer, or war hero endorses the firm firm-wide for 6 weeks for a ₡900 one-off fee, lifting traffic everywhere and warming showroom acceptance while the deal runs. Prices are printed on the buttons before you buy; active campaigns, their sponsor's name, and their weeks remaining sit at the top of the Sales screen. Weekly channel fees land in the report's advertising line. Advertising still works in the Long Quiet — it brings buyers in — but the Quiet's price ceiling still turns premium asks away.</li>
+          <li><strong>Markdown sales event:</strong> on any sector's card, trigger a <strong>Markdown Sale</strong>: pick 10% or 20% off, and for 2 weeks every asking price in that sector is visibly marked down — stock cards and margins show the marked-down price and the true profit or loss against build cost — while buyer traffic in that sector jumps. It's announced on the news wire, and the same sector then cools down for 6 weeks before it can run another.</li>
           <li><strong>Personnel:</strong> hire department heads — Chief Designer, Yard Foreman, Sales Director, Research Lead. Skill is rated in stars and paid weekly. Good people quietly bend every number in the firm your way.</li>
           <li><strong>Research:</strong> the galaxy's technology marches on by year, Detroit-style. Fund the lab weekly to earn research points, then unlock hulls, drives, and weapons as their era arrives — a heavy lance battery in 2708 is science fiction; by 2713 it's a product line.</li>
           <li><strong>Rivals:</strong> Vossk Combine Yards, the Imperium State Arsenals, and Meridian Starworks sell against you every week. The Boardroom tracks market share — take theirs.</li>
@@ -327,7 +450,7 @@
     <!-- DESIGN OFFICE -->
     <main class="layout" id="view-design">
       <section class="panel span-2">
-        <h2>Design Office <span class="tag">slipway preview · versions from v1.201</span></h2>
+        <h2>Design Office <span class="tag">slipway preview · versions from v1.202</span></h2>
         <div class="flash flash-local" role="status"></div>
         <div class="shipstage">
           <div id="shipSvg"></div>
@@ -351,7 +474,7 @@
         </div>
       </section>
       <section class="panel">
-        <h2>Blueprints <span class="tag">every line starts at v1.201</span></h2>
+        <h2>Blueprints <span class="tag">every line starts at v1.202</span></h2>
         <div class="blueprints" id="blueprints"></div>
       </section>
     </main>
@@ -367,6 +490,12 @@
 
     <!-- SALES & MARKETING -->
     <main class="layout" id="view-sales">
+      <section class="panel span-all" style="border-color:var(--teal)">
+        <h2>Market Pulse <span class="tag">the analyst's one-line read — refreshed from live demand every render</span></h2>
+        <p id="marketPulse" style="margin:0;font-size:18px;font-weight:700;line-height:1.35"></p>
+        <p class="small muted" id="marketPulseSub" style="margin:4px 0 0"></p>
+        <div id="adBoard" style="margin-top:10px"></div>
+      </section>
       <section class="panel">
         <h2>Territories — Galaxy Map <span class="tag" id="mapTag"></span></h2>
         <div class="flash flash-local" role="status"></div>
@@ -386,6 +515,11 @@
         <div id="stock"></div>
         <h3>In Transit</h3>
         <div id="transit"></div>
+      </section>
+      <section class="panel span-all">
+        <h2>Haggling Table — Buyer Offers <span class="tag" id="offerTag">buyers bid below asking — you set the final price</span></h2>
+        <div class="flash flash-local" role="status"></div>
+        <div id="buyerOffers"></div>
       </section>
       <section class="panel">
         <h2>Fleet Contracts <span class="tag">premium buyers</span></h2>
@@ -431,6 +565,35 @@
         <div class="techgrid" id="techGrid" style="margin-top:10px"></div>
       </section>
     </main>
+
+    <!-- WHAT'S NEW / CHANGELOG MODAL (read-only — opening or closing it touches no game state) -->
+    <div class="backdrop" id="whatsNewBackdrop">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="whatsNewTitle" style="border-color:var(--teal);box-shadow:0 0 28px rgba(63,208,201,.35),0 12px 44px rgba(0,0,0,.6)">
+        <h2 id="whatsNewTitle" style="color:var(--teal);text-shadow:0 0 10px rgba(63,208,201,.4)">✦ What's New — Changelog</h2>
+        <div class="muted">Hull &amp; Havoc <span class="ver-chip">v1.202</span> · tap outside the panel or Close to return to the game exactly as you left it.</div>
+        <h3 style="margin-top:14px">📱 Phone build v6 — already live</h3>
+        <ul>
+          <li><strong>iPhone fix:</strong> the game no longer hides its top row under the status bar / notch on iPhones. The home screen sits where it belongs — no more pulling the screen down to see the top of the game. (Phone-shell fix; the in-game version stayed v1.201 for that one.)</li>
+        </ul>
+        <h3 style="margin-top:14px">🚀 This update — game v1.202</h3>
+        <ul>
+          <li><strong>Reprice the floor at any time:</strong> every ship on the sales floor carries its own price tag — change one ship's price, or set a whole model line to one price, instantly. No re-save, no new design version. Dealerships, brokers, convoys, and haggling buyers all use the new price from that moment.</li>
+          <li><strong>Haggling buyers:</strong> buyers walk in with offers <em>below</em> your asking price. At the Haggling Table in Sales &amp; Marketing you can <strong>accept</strong> an offer for an instant sale, <strong>decline</strong> it, or <strong>counter</strong> at your own price — a buyer in range may meet you partway, counter back, or walk if you push past what they can pay.</li>
+          <li><strong>Cost &amp; margin always visible:</strong> build cost sits next to asking price on every ship card, every offer, and every bundle — with the exact profit margin (credits and %) at sticker and at the buyer's offer. Green ahead, red at a loss.</li>
+          <li><strong>Trade-in offers:</strong> some buyers pay part cash, part their old ship. The card values the trade-in and shows the full deal against your build cost; accept, and the trade-in joins your stock to price, refit, and resell.</li>
+          <li><strong>Rival price wars:</strong> a rival occasionally slashes prices in one sector for a few weeks. Buyers there lean to the rival unless you answer with floor-price cuts or advertising. Announced — and its end announced — in the news and Weekly Report, and flagged on the sector.</li>
+          <li><strong>Market Pulse:</strong> a one-line analyst's read at the top of Sales &amp; Marketing, computed weekly from real demand, tastes, the economy, and any price war — which role is fetching over or under market value, and which sector is hot or soft.</li>
+          <li><strong>Repeat buyers:</strong> deal fairly with a haggling buyer and they can return in later weeks wearing a Repeat buyer tag — opening closer to your asking price and staying at the table for an extra counter round.</li>
+          <li><strong>Fleet bundles:</strong> sometimes a buyer wants two ships from the same showroom at once — one bundle deal at a small premium over combined asking, or a haggle just under it. Accept, decline, or counter as one deal; both ships leave together.</li>
+          <li><strong>Advertising channels:</strong> Subspace Radio (₡40/wk, modest traffic lift) and Holovision (₡160/wk, big lift) per sector, stacking with the existing weekly budget — plus <strong>Celebrity Sponsor</strong> deals: a named holostar, racer, or war hero endorses the firm firm-wide for 6 weeks (₡900 one-off), their name on the Sales screen while the deal runs. Active campaigns show their remaining weeks.</li>
+          <li><strong>Markdown sales events:</strong> trigger a 10% or 20% markdown in a sector for 2 weeks — asking prices and margins visibly drop to the marked-down truth, buyer traffic jumps, the news wire announces it, and the sector cools down for 6 weeks before another.</li>
+          <li><strong>A more sci-fi home screen:</strong> deeper drifting starfield, neon-teal glow on the brand and key numbers, scanline texture, glowing angular panel corners — same layout, same buttons, new command-deck feel.</li>
+          <li><strong>Showroom floor:</strong> the Sales &amp; Marketing view now sits on a dealership backdrop — display-pad glows, showroom spotlights, and a polished holo-grid floor behind the panels.</li>
+          <li><strong>This changelog:</strong> the ✦ What's New link beside the version badge — you're reading it.</li>
+        </ul>
+        <div class="btnrow"><button class="btn primary" id="btnWhatsNewClose">Close — back to the yards</button></div>
+      </div>
+    </div>
 
     <!-- MONTHLY REPORT MODAL -->
     <div class="backdrop" id="ledgerBackdrop">
@@ -506,7 +669,7 @@
    last place with every fix or addition — now at 1.201 — and every new
    design line is born at the game's version. Stored as integer
    thousandths: 1100 = v1.100, 1101 = v1.101. */
-var GAME_VERSION = 1201;
+var GAME_VERSION = 1202;
 var DEFAULT_FIRM_NAME = "Corvane Consolidated Yards";
 function firmName() { return (typeof S !== "undefined" && S && S.firmName) ? S.firmName : DEFAULT_FIRM_NAME; }
 function fmtVer(v) { return "v" + ((v == null ? 1000 : v) / 1000).toFixed(3); }
@@ -686,7 +849,7 @@ function tasteMatches(rel, sh) {
   if (rel.taste === "warships") return st.role === "Warship";
   if (rel.taste === "haulers") return st.role === "Freighter";
   if (rel.taste === "fast") return st.speed >= 7;
-  if (rel.taste === "cheap") return askingPrice(sh.design) <= st.value * 0.95;
+  if (rel.taste === "cheap") return ((typeof floorAsk === "function") ? floorAsk(sh) : shipAsk(sh)) <= st.value * 0.95;
   return false;
 }
 /* ================= DESIGN MATH ================= */
@@ -705,6 +868,315 @@ function designStats(d) {
     role: d.weapon === "none" ? "Freighter" : "Warship", sizeName: sz.name };
 }
 function askingPrice(d) { var st = designStats(d); return d.price ? Math.round(d.price) : st.value; }
+/* ================= v1.202: PER-SHIP FLOOR PRICING — cost & margin always visible =================
+   A stock ship's sticker price lives on the ship itself (sh.price). Until the
+   player sets one, the sticker is the blueprint asking price scaled by the
+   ship's build quality — the game's long-standing rule. Setting a price is
+   instant and final: dealerships, brokers, convoys and haggling buyers all
+   read shipAsk() from that moment. Build cost never moves once a ship exists
+   in the player's mind — it is designStats().cr, printed on every card. */
+function shipBuildCost(sh) { return designStats(sh.design).cr; }
+function shipAsk(sh) {
+  if (sh && sh.price != null) return Math.round(sh.price);
+  return Math.round(askingPrice(sh.design) * ((sh && sh.quality) || 1));
+}
+function marginOf(price, cost) { return Math.round(price) - Math.round(cost); }
+function marginPct(price, cost) { return cost > 0 ? Math.round((price - cost) / cost * 100) : 0; }
+function marginHtml(price, cost) {
+  var m = marginOf(price, cost), pct = marginPct(price, cost);
+  var cls = m > 0 ? "margin-good" : m < 0 ? "margin-bad" : "margin-zero";
+  var txt = m === 0 ? "break-even — ₡0 (0%)" : (m > 0 ? "+" : "−") + "₡" + Math.abs(m).toLocaleString("en-US") + " (" + (pct > 0 ? "+" : "") + pct + "%)";
+  return '<span class="' + cls + '">' + txt + '</span>';
+}
+function costStripHtml(sh) {
+  var cost = shipBuildCost(sh), ask = (typeof floorAsk === "function") ? floorAsk(sh) : shipAsk(sh), st = designStats(sh.design);
+  var md = (typeof markdownOf === "function" && sh) ? markdownOf(sh.sector) : null;
+  return '<div class="cost-strip"><span><span class="cs-label">Build cost</span> ' + fmt(cost) + '</span>' +
+    '<span aria-hidden="true">·</span><span><span class="cs-label">Market value</span> ' + fmt(st.value) + '</span>' +
+    '<span aria-hidden="true">·</span><span><span class="cs-label">' + (md ? 'Asking — marked down ' + md.pct + '% from ' + fmt(shipAsk(sh)) : 'Asking') + '</span> ' + fmt(ask) + '</span>' +
+    '<span aria-hidden="true">·</span><span><span class="cs-label">Profit if sold at asking</span> ' + marginHtml(ask, cost) + '</span></div>';
+}
+/* ================= v1.202 SALES SYSTEMS: markdowns, price wars, ads, haggling ================= */
+function ensureSalesState() {
+  if (!S.buyerOffers) S.buyerOffers = [];
+  if (!S.priceWars) S.priceWars = [];
+  if (!S.knownBuyers) S.knownBuyers = [];
+  if (!S.adCampaigns) S.adCampaigns = [];
+  if (!S.markdowns) S.markdowns = {};
+  if (!S.markdownCooldown) S.markdownCooldown = {};
+}
+function markdownOf(sectorId) { ensureSalesState(); var m = S.markdowns[sectorId]; return (m && m.weeksLeft > 0) ? m : null; }
+function floorAsk(sh) { var a = shipAsk(sh); var m = sh && markdownOf(sh.sector); return m ? Math.round(a * (1 - m.pct / 100)) : a; }
+function priceWarAt(sectorId) { ensureSalesState(); for (var i = 0; i < S.priceWars.length; i++) if (S.priceWars[i].sector === sectorId && S.priceWars[i].weeksLeft > 0) return S.priceWars[i]; return null; }
+function sponsorCampaign() { ensureSalesState(); for (var i = 0; i < S.adCampaigns.length; i++) if (S.adCampaigns[i].channel === "sponsor" && S.adCampaigns[i].weeksLeft > 0) return S.adCampaigns[i]; return null; }
+function adLift(sectorId) {
+  ensureSalesState(); var traffic = 0, accept = 0;
+  S.adCampaigns.forEach(function (c) {
+    if (c.weeksLeft <= 0) return;
+    if (c.channel === "radio" && c.sector === sectorId) traffic += 0.12;
+    if (c.channel === "holo" && c.sector === sectorId) traffic += 0.30;
+    if (c.channel === "sponsor") { traffic += 0.20; accept += 0.04; }
+  });
+  return { traffic: traffic, accept: accept };
+}
+var CELEBRITIES = [
+  { name: "Vesper Kane", title: "holostar of the Meridian serials" },
+  { name: "Jax 'Comet' Oduya", title: "three-time Golden Lane racer" },
+  { name: "Admiral (ret.) Sana Vrell", title: "hero of the Dusk Verge" },
+  { name: "Lio Marchetti", title: "voice of the Subspace Top Forty" },
+  { name: "Captain Rhea Solace", title: "the freighter captain who outran the Ember blockade" }
+];
+function renderSalesTop() {
+  ensureSalesState();
+  var pulseEl = $("marketPulse"), subEl = $("marketPulseSub"), adEl = $("adBoard");
+  if (!pulseEl) return;
+  var secs = Object.values(S.sectors);
+  var hot = null, soft = null;
+  secs.forEach(function (sec) {
+    var d = demandOf(sec), score = Math.max(d.war, d.trade);
+    if (!hot || score > hot.score) hot = { sec: sec, score: score, war: d.war, trade: d.trade };
+    var avg = (d.war + d.trade) / 2;
+    if (!soft || avg < soft.score) soft = { sec: sec, score: avg, war: d.war, trade: d.trade };
+  });
+  var warAvg = 0, tradeAvg = 0;
+  secs.forEach(function (sec) { var d = demandOf(sec); warAvg += d.war; tradeAvg += d.trade; });
+  warAvg /= secs.length; tradeAvg /= secs.length;
+  var roleLine = warAvg >= tradeAvg
+    ? "Warships are the money right now — fetching over market value wherever the guns are wanted (war demand averaging " + Math.round(warAvg) + " vs trade " + Math.round(tradeAvg) + ")"
+    : "Freighters are the money right now — fetching over market value on the trade lanes (trade demand averaging " + Math.round(tradeAvg) + " vs war " + Math.round(warAvg) + ")";
+  var line = "“" + roleLine + "; " + (hot ? hot.sec.name + " is hot (" + (hot.war >= hot.trade ? "war " + hot.war : "trade " + hot.trade) + ")" : "") + (soft ? ", while " + soft.sec.name + " is soft — discount there or don't ship there." : ".") + "”";
+  if (S.longQuietUntil && S.turn < S.longQuietUntil) line = "“Long Quiet rules the board: only cheap hulls move — anything priced over 95% of market value is being turned away at the door, in every sector, whatever the demand board says.”";
+  var pw0 = S.priceWars.filter(function (w) { return w.weeksLeft > 0; })[0];
+  if (pw0) line = "“Price war in " + sectorById(pw0.sector).name + " — " + pw0.rival + " has slashed prices " + pw0.pct + "% and buyers there are leaning their way. Answer with floor-price cuts or advertising, or your showroom goes quiet.”";
+  var sp0 = sponsorCampaign();
+  if (sp0 && !pw0) line += " And " + sp0.celeb + " is on every screen saying your name — traffic is up firm-wide.";
+  pulseEl.textContent = line;
+  var bits = [];
+  if (S.econ && S.econ.left > 0) bits.push("Economy swing: war " + (S.econ.war > 0 ? "+" : "") + S.econ.war + " / trade " + (S.econ.trade > 0 ? "+" : "") + S.econ.trade + ", " + S.econ.left + " wk left");
+  if (hot) bits.push("Hottest: " + hot.sec.name + " — " + TASTES[relOf(hot.sec.id).taste].name.toLowerCase() + ", relationship " + Math.round(relOf(hot.sec.id).score));
+  if (S.stock.length) { var sunk = 0, askT = 0; S.stock.forEach(function (sh) { sunk += shipBuildCost(sh); askT += floorAsk(sh); }); bits.push("Floor today: " + S.stock.length + " ship(s), " + fmt(sunk) + " of build cost on the pads, " + fmt(askT) + " of asking — " + fmt(askT - sunk) + " of margin if it all sells at sticker"); }
+  subEl.textContent = "— The Floor Analyst, " + dateLabel() + (bits.length ? " · " + bits.join(" · ") : "");
+  var ah = "";
+  var act = S.adCampaigns.filter(function (c) { return c.weeksLeft > 0; });
+  if (act.length) ah += '<div class="offer-figures">' + act.map(function (c) {
+    return '<span class="pill free">' + (c.channel === "radio" ? "📻 Subspace Radio — " + esc(sectorById(c.sector).name) : c.channel === "holo" ? "📺 Holovision — " + esc(sectorById(c.sector).name) : "★ Sponsor: " + esc(c.celeb)) + ' · ' + c.weeksLeft + ' wk left' + (c.costPerWeek ? ' · ' + fmt(c.costPerWeek) + '/wk' : ' · prepaid') + '</span>';
+  }).join("") + '</div>';
+  S.priceWars.filter(function (w) { return w.weeksLeft > 0; }).forEach(function (w) { ah += '<div class="pricewar-banner">⚠ PRICE WAR — ' + esc(w.rival) + ' is ' + w.pct + '% under the market in <strong>' + esc(sectorById(w.sector).name) + '</strong> for ' + w.weeksLeft + ' more week(s). Buyers there lean to the rival unless you cut floor prices (≤ market value blunts it; ≤90% or ₡250/wk ads nearly cancel it).</div>'; });
+  Object.keys(S.markdowns).forEach(function (sid) { var m = S.markdowns[sid]; if (m.weeksLeft > 0) ah += '<div class="pricewar-banner" style="border-color:var(--teal);background:color-mix(in srgb, var(--teal) 8%, var(--panel2))">🏷 MARKDOWN SALE — ' + m.pct + '% off every asking price in <strong>' + esc(sectorById(sid).name) + '</strong>, ' + m.weeksLeft + ' wk left. Traffic is up; margins on that floor show the marked-down truth.</div>'; });
+  if (!sp0) ah += '<div class="btnrow" style="margin-top:8px"><button class="btn mini" id="btnSponsor" ' + (S.credits < 900 ? "disabled" : "") + '>★ Sign a celebrity sponsor — ' + fmt(900) + ' one-off · 6 weeks · firm-wide traffic + acceptance</button><span class="muted small">A holostar, racer, or war hero puts their name on ' + esc(firmName()) + ' — the name appears here while the deal runs.</span></div>';
+  else ah += '<p class="small" style="margin:6px 0 0">★ <strong>' + esc(sp0.celeb) + '</strong>, ' + esc(sp0.celebTitle) + ', endorses ' + esc(firmName()) + ' — "' + esc(sp0.quote) + '"</p>';
+  adEl.innerHTML = ah;
+  var bs = $("btnSponsor");
+  if (bs) bs.onclick = function () {
+    if (S.credits < 900 || sponsorCampaign()) return;
+    var cel = pick(CELEBRITIES);
+    S.credits -= 900;
+    S.adCampaigns.push({ id: uid(), channel: "sponsor", sector: null, weeksLeft: 6, costPerWeek: 0, celeb: cel.name, celebTitle: cel.title, quote: "I don't put my name on hulls I wouldn't fly. " + firmName() + " builds the ones I fly." });
+    logNews("CELEBRITY ENDORSEMENT: " + cel.name + " (" + cel.title + ") signs with " + firmName() + " for six weeks — traffic and showroom warmth rise firm-wide.");
+    flash(cel.name + " is now the face of " + firmName() + " for 6 weeks — " + fmt(900) + " paid, traffic up everywhere.");
+    render();
+  };
+}
+/* ---- Trade-ins ---- */
+function genTradeIn(sec) {
+  var oldNames = ["Starling", "Mule", "Pioneer", "Tern", "Workhorse", "Pilgrim", "Dray", "Scout"];
+  var size = pick(["fighter", "corvette", "corvette", "frigate"]);
+  var d = { name: pick(oldNames) + " (trade-in)", ver: 1000 + ri(1, 90), size: size, hull: pick(["wedge", "hauler", "bulwark"]), engine: "standard", weapon: pick(["none", "none", "laser"]), price: null, appeal: ri(78, 94) };
+  var st = designStats(d);
+  var value = Math.round(st.value * rnd(0.5, 0.72));
+  d.price = value;
+  return { design: d, quality: Math.round(rnd(0.82, 0.92) * 100) / 100, value: value };
+}
+/* ---- Haggling buyers: single, bundle, trade-in, repeat ---- */
+var BUYER_TRAITS = [
+  { id: "lowball", name: "Lowballer", disc: [0.55, 0.72], will: 0.35, line: "My cousin can get one cheaper. Probably. Take it before I change my mind." },
+  { id: "steady", name: "Steady trader", disc: [0.70, 0.87], will: 0.55, line: "Fair ship, fair yard — but your sticker is rich for my routes. Meet me properly and we deal." },
+  { id: "desperate", name: "Desperate buyer", disc: [0.80, 0.94], will: 0.8, line: "I need a hull this week, not next. I can't pay sticker — but I can pay close, and I can pay now." }
+];
+function pickBuyerIdentity() {
+  ensureSalesState();
+  var eligible = S.knownBuyers.filter(function (k) { return k.deals >= 1 && S.turn - k.lastTurn >= 3 && !S.buyerOffers.some(function (o) { return o.buyerKey === k.key; }); });
+  if (eligible.length && Math.random() < 0.45) { var k = pick(eligible); return { key: k.key, name: k.name, repeat: true }; }
+  var name = pick(FIRST_NAMES) + " " + pick(LAST_NAMES);
+  return { key: "b:" + name, name: name, repeat: false };
+}
+function spawnBuyerOffer(manual) {
+  ensureSalesState(); pruneBuyerOffers();
+  if (!S.stock.length) { if (manual) flash("No ships on the floor — buyers need something to haggle over.", true); return false; }
+  if (S.buyerOffers.length >= 4) { if (manual) flash("The haggling table is full — close or clear an offer first.", true); return false; }
+  var busy = {}; S.buyerOffers.forEach(function (o) { o.shipIds.forEach(function (id) { busy[id] = true; }); });
+  var free = S.stock.filter(function (sh) { return !busy[sh.id]; });
+  if (!free.length) { if (manual) flash("Every ship on the floor already has a buyer at the table.", true); return false; }
+  var bySector = {}; free.forEach(function (sh) { (bySector[sh.sector] = bySector[sh.sector] || []).push(sh); });
+  var bundleSectors = Object.keys(bySector).filter(function (sid) { return bySector[sid].length >= 2; });
+  var ships, kind = "single";
+  if (bundleSectors.length && Math.random() < 0.3) {
+    var bs = bySector[pick(bundleSectors)]; ships = [bs[0], bs[1]]; kind = "bundle";
+  } else ships = [pick(free)];
+  var sec = sectorById(ships[0].sector);
+  var ident = pickBuyerIdentity();
+  var trait = pick(BUYER_TRAITS);
+  var ask = ships.reduce(function (a, sh) { return a + floorAsk(sh); }, 0);
+  var premium = kind === "bundle" && Math.random() < 0.35;
+  var disc = ident.repeat ? rnd(0.86, 0.97) : premium ? rnd(1.02, 1.07) : rnd(trait.disc[0], trait.disc[1]);
+  if (S.longQuietUntil && S.turn < S.longQuietUntil) disc = Math.min(disc, rnd(0.6, 0.85));
+  var tradeIn = (kind === "single" && Math.random() < 0.35) ? genTradeIn(sec) : null;
+  var totalTarget = Math.round(ask * disc);
+  var cash = tradeIn ? Math.max(Math.round(ask * 0.3), totalTarget - tradeIn.value) : totalTarget;
+  var cashAsk = ask - (tradeIn ? tradeIn.value : 0);
+  var will = ident.repeat ? Math.min(0.92, trait.will + 0.15) : trait.will;
+  var ceiling = premium ? Math.round(cashAsk * 1.1) : Math.round(cash + Math.max(0, cashAsk - cash) * will);
+  var titles = ["Capt.", "Factor", "Broker", "Lt.", "Dockmaster"];
+  var offer = { id: uid(), kind: kind, shipIds: ships.map(function (sh) { return sh.id; }), sector: sec.id,
+    buyerKey: ident.key, buyerName: (ident.repeat ? "" : pick(titles) + " ") + ident.name, repeat: ident.repeat,
+    trait: ident.repeat ? "Repeat buyer" : trait.name, offer: cash, ceiling: ceiling, premium: premium,
+    roundsLeft: ident.repeat ? 4 : 3, expiresTurn: S.turn + 2, tradeIn: tradeIn,
+    history: [{ who: ident.name, text: "“" + (ident.repeat ? "You dealt straight with me last time, so I'll start closer this time. " : "") + trait.line + "” — offers " + fmt(cash) + (tradeIn ? " cash plus their old " + tradeIn.design.name.replace(" (trade-in)", "") + " (worth about " + fmt(tradeIn.value) + ")" : "") + " against your " + fmt(ask) + " asking." }] };
+  S.buyerOffers.push(offer);
+  logNews("A buyer is haggling in " + sec.name + ": " + offer.buyerName + " offered " + fmt(offer.offer) + (tradeIn ? " + a trade-in" : "") + " for " + ships.map(function (sh) { return designLabel(sh.design); }).join(" + ") + " (asking " + fmt(ask) + "). The Haggling Table in Sales has the deal.");
+  if (manual) flash(offer.buyerName + " walks onto the floor in " + sec.name + " and opens at " + fmt(offer.offer) + (tradeIn ? " plus a trade-in" : "") + " — see the Haggling Table.");
+  return true;
+}
+function maybeSpawnBuyerOffers() { if (S.stock.length && !S.buyerOffers.length) spawnBuyerOffer(false); if (S.stock.length >= 2 && Math.random() < 0.45) spawnBuyerOffer(false); }
+function pruneBuyerOffers() {
+  ensureSalesState();
+  S.buyerOffers = S.buyerOffers.filter(function (o) { return o.shipIds.every(function (id) { return S.stock.some(function (sh) { return sh.id === id; }); }); });
+}
+function offerShips(o) { return o.shipIds.map(function (id) { return S.stock.filter(function (sh) { return sh.id === id; })[0]; }).filter(Boolean); }
+function offerTotals(o) {
+  var ships = offerShips(o); var cost = 0, ask = 0;
+  ships.forEach(function (sh) { cost += shipBuildCost(sh); ask += floorAsk(sh); });
+  var tv = o.tradeIn ? o.tradeIn.value : 0;
+  return { cost: cost, ask: ask, tradeValue: tv, total: o.offer + tv };
+}
+function recordFairDeal(o, finalTotal) {
+  ensureSalesState();
+  var k = S.knownBuyers.filter(function (x) { return x.key === o.buyerKey; })[0];
+  if (!k) { k = { key: o.buyerKey, name: o.buyerName.replace(/^(Capt\.|Factor|Broker|Lt\.|Dockmaster)\s+/, ""), deals: 0, lastTurn: 0 }; S.knownBuyers.push(k); }
+  k.deals += 1; k.lastTurn = S.turn;
+}
+function closeBuyerDeal(o, cashPrice) {
+  var ships = offerShips(o); if (!ships.length) { pruneBuyerOffers(); render(); return; }
+  var t = offerTotals(o); var totalValue = cashPrice + t.tradeValue;
+  ships.forEach(function (sh) {
+    S.stock = S.stock.filter(function (x) { return x.id !== sh.id; });
+    var rel = relOf(sh.sector); rel.sales += 1; rel.lastSaleTurn = S.turn; rel.score = clamp(rel.score + 0.8, 0, 100);
+  });
+  S.credits += cashPrice; S.cumPlayerRev += totalValue;
+  var tradeNote = "";
+  if (o.tradeIn) {
+    S.stock.push({ id: uid(), design: o.tradeIn.design, sector: o.sector, quality: o.tradeIn.quality, price: null, tradeIn: true });
+    tradeNote = " Their old " + o.tradeIn.design.name.replace(" (trade-in)", "") + " joins your stock in " + sectorById(o.sector).name + " — price it, ship it, or refit it and resell it.";
+  }
+  recordFairDeal(o, totalValue);
+  S.buyerOffers = S.buyerOffers.filter(function (x) { return x.id !== o.id; });
+  pruneBuyerOffers();
+  var names = ships.map(function (sh) { return designLabel(sh.design); }).join(" + ");
+  logNews("Haggled sale: " + names + " sold to " + o.buyerName + " for " + fmt(cashPrice) + (o.tradeIn ? " cash + a trade-in valued " + fmt(t.tradeValue) : "") + " — margin " + fmt(totalValue - t.cost) + " over build cost. They'll remember being dealt with fairly.");
+  flash("Deal closed: " + names + " → " + o.buyerName + " for " + fmt(cashPrice) + (o.tradeIn ? " cash + trade-in" : "") + ". Margin over build cost: " + fmt(totalValue - t.cost) + "." + tradeNote);
+  render();
+}
+function renderBuyerOffers() {
+  var el = $("buyerOffers"); if (!el) return;
+  ensureSalesState(); pruneBuyerOffers();
+  var ot = $("offerTag"); if (ot) ot.textContent = S.buyerOffers.length ? S.buyerOffers.length + " buyer(s) at the table · cost & margin on every card" : "buyers bid below asking — you set the final price";
+  var html = '<div class="btnrow" style="margin-top:0"><button class="btn primary mini" id="btnInviteBuyer" ' + (!S.stock.length || S.buyerOffers.length >= 4 ? "disabled" : "") + '>Invite a buyer to the floor</button>' +
+    '<span class="muted small">' + (S.stock.length ? "A random buyer picks a ship (sometimes two from one showroom, sometimes with a trade-in) and opens below asking. Accept, reject, or counter — counters are final-price offers, and every buyer has a limit they'll walk past." : "No ships in stock — the table fills once the floor does.") + '</span></div>';
+  if (!S.buyerOffers.length) html += '<div class="empty">No buyers haggling right now. New offers arrive as weeks pass' + (S.stock.length ? ', or invite one above.' : '.') + '</div>';
+  html += S.buyerOffers.map(function (o) {
+    var ships = offerShips(o); if (!ships.length) return "";
+    var t = offerTotals(o); var sec = sectorById(o.sector);
+    var thumbs = ships.map(function (sh) { return '<span style="width:104px;flex:0 0 104px">' + shipSvg(sh.design, "104") + '</span>'; }).join("");
+    var names = ships.map(function (sh) { return "<strong>" + esc(sh.design.name) + "</strong> <span class=\"ver-chip\">" + fmtVer(sh.design.ver) + "</span>"; }).join(" + ");
+    var tags = '<span class="pill">' + esc(o.trait) + '</span>' + (o.repeat ? ' <span class="pill repeat">★ Repeat buyer — opens closer, stays longer</span>' : '') + (o.kind === "bundle" ? ' <span class="pill bundle">FLEET BUNDLE — 2 SHIPS, ONE DEAL</span>' : '') + (o.premium ? ' <span class="pill free">PREMIUM OFFER</span>' : '') + (o.tradeIn ? ' <span class="pill tradein">TRADE-IN INCLUDED</span>' : '') + ' <span class="pill ' + (o.expiresTurn - S.turn <= 0 ? "war" : "") + '">' + Math.max(0, o.expiresTurn - S.turn) + ' wk left</span> <span class="pill">' + o.roundsLeft + ' counter round(s) left</span>';
+    var ti = "";
+    if (o.tradeIn) {
+      var tst = designStats(o.tradeIn.design);
+      ti = '<div class="tradein-box"><strong>Trade-in:</strong> ' + esc(o.tradeIn.design.name) + ' — ' + tst.sizeName + ' ' + tst.role + ', F' + tst.fire + ' S' + tst.speed + ' C' + tst.cargo + ', condition ' + Math.round(o.tradeIn.quality * 100) + '% (flyable, shows its years). <strong>Estimated market value ' + fmt(o.tradeIn.value) + '</strong>. Accept and it joins your stock in ' + esc(sec.name) + ' — refit it with newer parts and resell it, or price it as-is.</div>';
+    }
+    return '<div class="offer-card"><div class="ohead">' + thumbs + '<span><span class="buyer">' + esc(o.buyerName) + '</span><br>' + tags + '<br><span class="muted">wants ' + names + ' · on the floor at ' + esc(sec.name) + '</span></span></div>' +
+      '<div class="cost-strip"><span><span class="cs-label">' + (o.kind === "bundle" ? "Combined build cost" : "Build cost") + '</span> ' + fmt(t.cost) + '</span><span aria-hidden="true">·</span>' +
+      '<span><span class="cs-label">Asking</span> ' + fmt(t.ask) + '</span><span aria-hidden="true">·</span>' +
+      '<span><span class="cs-label">Their offer</span> ' + fmt(o.offer) + ' cash' + (o.tradeIn ? ' + ' + fmt(t.tradeValue) + ' trade-in = ' + fmt(t.total) + ' total' : '') + '</span><span aria-hidden="true">·</span>' +
+      '<span><span class="cs-label">Margin at their offer</span> ' + marginHtml(t.total, t.cost) + '</span><span aria-hidden="true">·</span>' +
+      '<span><span class="cs-label">Margin at asking</span> ' + marginHtml(t.ask, t.cost) + '</span></div>' + ti +
+      '<ul class="haggle-log">' + o.history.map(function (h) { return '<li><span class="who">' + esc(h.who) + ':</span> ' + esc(h.text) + '</li>'; }).join("") + '</ul>' +
+      '<div class="haggle-actions"><button class="btn primary mini" data-offer-accept="' + o.id + '">Accept — sell for ' + fmt(o.offer) + (o.tradeIn ? ' + trade-in' : '') + '</button>' +
+      '<button class="btn mini danger" data-offer-reject="' + o.id + '">Reject</button>' +
+      '<label class="small muted" for="counter-' + o.id + '">Counter at ₡</label><input type="number" id="counter-' + o.id + '" data-counter-input="' + o.id + '" min="1" step="10" value="' + Math.min(t.ask - t.tradeValue, o.offer + Math.max(50, Math.round((t.ask - t.tradeValue - o.offer) / 2))) + '" />' +
+      '<button class="btn mini" data-offer-counter="' + o.id + '">Counter ▸</button>' +
+      (o.tradeIn ? '<span class="muted small">Your counter is the cash part — the trade-in still comes on top of it.</span>' : '') + '</div></div>';
+  }).join("");
+  el.innerHTML = html;
+  var inv = $("btnInviteBuyer"); if (inv) inv.onclick = function () { if (spawnBuyerOffer(true)) render(); };
+  Array.prototype.forEach.call(el.querySelectorAll("[data-offer-accept]"), function (b) { b.onclick = function () { var o = S.buyerOffers.filter(function (x) { return x.id === Number(b.getAttribute("data-offer-accept")); })[0]; if (o) closeBuyerDeal(o, o.offer); }; });
+  Array.prototype.forEach.call(el.querySelectorAll("[data-offer-reject]"), function (b) { b.onclick = function () { var o = S.buyerOffers.filter(function (x) { return x.id === Number(b.getAttribute("data-offer-reject")); })[0]; if (!o) return; S.buyerOffers = S.buyerOffers.filter(function (x) { return x.id !== o.id; }); flash(o.buyerName + " shrugs and leaves the floor. The ship stays yours — and stays priced by you."); render(); }; });
+  Array.prototype.forEach.call(el.querySelectorAll("[data-offer-counter]"), function (b) { b.onclick = function () { counterBuyerOffer(Number(b.getAttribute("data-offer-counter"))); }; });
+}
+function counterBuyerOffer(offerId) {
+  var o = S.buyerOffers.filter(function (x) { return x.id === offerId; })[0]; if (!o) return;
+  var inp = document.querySelector('[data-counter-input="' + offerId + '"]');
+  var cp = inp ? Math.round(Number(inp.value)) : NaN;
+  var t = offerTotals(o);
+  if (!cp || cp <= 0) { flash("Type the price you're countering at first.", true); return; }
+  if (cp <= o.offer) { flash("That's at or below their offer — just Accept it and the deal is done at " + fmt(o.offer) + ".", true); return; }
+  if (cp <= o.ceiling) { o.history.push({ who: o.buyerName, text: "“" + fmt(cp) + "? …Done. Hands across the table — that's a price I can live with.”" }); closeBuyerDeal(o, cp); return; }
+  if (cp > o.ceiling * 1.25) {
+    S.buyerOffers = S.buyerOffers.filter(function (x) { return x.id !== o.id; });
+    logNews(o.buyerName + " walked away from the haggling table in " + sectorById(o.sector).name + " after a counter of " + fmt(cp) + " — far past what they'd pay.");
+    flash(o.buyerName + " stares at " + fmt(cp) + ", laughs once, and walks off the floor. Some counters end negotiations.", true); render(); return;
+  }
+  o.roundsLeft -= 1;
+  if (o.roundsLeft <= 0) {
+    S.buyerOffers = S.buyerOffers.filter(function (x) { return x.id !== o.id; });
+    logNews(o.buyerName + " ran out of patience at the haggling table in " + sectorById(o.sector).name + " and left without a ship.");
+    flash(o.buyerName + " has haggled enough — they take their credits elsewhere. The ship stays on your floor.", true); render(); return;
+  }
+  var step = Math.max(25, Math.round((o.ceiling - o.offer) * rnd(0.4, 0.65)));
+  o.offer = Math.min(o.ceiling, o.offer + step);
+  o.history.push({ who: "You", text: "Countered at " + fmt(cp) + (o.tradeIn ? " cash + the trade-in" : "") + "." });
+  o.history.push({ who: o.buyerName, text: "“Can't do " + fmt(cp) + ". I can do " + fmt(o.offer) + (o.tradeIn ? " cash, and the trade-in still stands" : "") + " — that's me moving. Your move.” (" + o.roundsLeft + " round(s) left in them)" });
+  flash(o.buyerName + " counters at " + fmt(o.offer) + (o.tradeIn ? " cash + trade-in" : "") + " — accept it, counter again (" + o.roundsLeft + " round(s) left), or let them walk.");
+  render();
+}
+/* ---- Weekly tick for wars / campaigns / markdowns / offer expiry ---- */
+function tickSalesEvents(report) {
+  ensureSalesState();
+  S.adCostThisWeek = 0;
+  var stillAds = [];
+  S.adCampaigns.forEach(function (c) {
+    if (c.costPerWeek) S.adCostThisWeek += c.costPerWeek;
+    c.weeksLeft -= 1;
+    if (c.weeksLeft <= 0) report.lines.push("ADVERTISING: the " + (c.channel === "sponsor" ? "sponsorship of " + c.celeb : c.channel === "radio" ? "Subspace Radio run in " + sectorById(c.sector).name : "Holovision run in " + sectorById(c.sector).name) + " ended this week.");
+    else stillAds.push(c);
+  });
+  S.adCampaigns = stillAds;
+  Object.keys(S.markdowns).forEach(function (sid) {
+    var m = S.markdowns[sid]; m.weeksLeft -= 1;
+    if (m.weeksLeft <= 0) { delete S.markdowns[sid]; S.markdownCooldown[sid] = S.turn + 6; report.lines.push("MARKDOWN SALE ENDED in " + sectorById(sid).name + " — prices there are back to sticker, and the sector cools down for 6 weeks before another sale."); logNews("The markdown sale in " + sectorById(sid).name + " ended; full prices restored."); }
+  });
+  var stillWars = [];
+  S.priceWars.forEach(function (w) {
+    w.weeksLeft -= 1;
+    if (w.weeksLeft <= 0) { report.lines.push("PRICE WAR OVER: " + w.rival + " restored prices in " + sectorById(w.sector).name + " — showroom buyers there are shopping on merit again."); logNews("Price war ended in " + sectorById(w.sector).name + " — " + w.rival + " restored its prices."); }
+    else stillWars.push(w);
+  });
+  S.priceWars = stillWars;
+  if (S.priceWars.length < 2 && Math.random() < 0.11) {
+    var activeSecs = Object.values(S.sectors).filter(function (sec) { return S.hubs[sec.id] || S.stock.some(function (sh) { return sh.sector === sec.id; }); });
+    var sec2 = activeSecs.length ? pick(activeSecs) : pick(Object.values(S.sectors));
+    var rival = pick(S.rivals);
+    var w2 = { sector: sec2.id, rival: rival.name, pct: ri(12, 30), weeksLeft: ri(3, 5) };
+    S.priceWars.push(w2);
+    report.lines.push("PRICE WAR: " + rival.name + " slashed prices " + w2.pct + "% in " + sec2.name + " for " + w2.weeksLeft + " weeks. Buyers there lean to the rival unless you answer — cut floor prices (≤ market value blunts it; ≤90% of value, or ₡250/wk advertising there, nearly cancels it).");
+    logNews("PRICE WAR in " + sec2.name + ": " + rival.name + " cut prices " + w2.pct + "% for " + w2.weeksLeft + " weeks.");
+    S.lastHeadline = "PRICE WAR IN " + sec2.name.toUpperCase() + " — " + rival.name.toUpperCase() + " SLASHES PRICES";
+  }
+  var before = S.buyerOffers.length;
+  S.buyerOffers = S.buyerOffers.filter(function (o) { return o.expiresTurn >= S.turn; });
+  if (S.buyerOffers.length < before) report.lines.push("The haggling table cleared: " + (before - S.buyerOffers.length) + " buyer offer(s) expired unanswered.");
+  pruneBuyerOffers();
+}
 function appealOf(d) { return d.appeal == null ? 100 : d.appeal; }
 function demandOf(sec) {
   var war = 15, trade = 35;
@@ -774,7 +1246,7 @@ function newGame() {
     turn: 1, credits: 15000, alloy: 60, components: 40,
     prices: { alloy: 42, comp: 65 },
     sectors: {}, hubs: {}, yards: [], blueprints: [], stock: [], transit: [],
-    offers: [], active: [], news: [], pirates: 0, won: false, over: false, charterShown: false,
+    offers: [], active: [], buyerOffers: [], priceWars: [], knownBuyers: [], adCampaigns: [], markdowns: {}, markdownCooldown: {}, news: [], pirates: 0, won: false, over: false, charterShown: false,
     tech: {}, rp: 12, resBudget: 75,
     managers: { designer: null, foreman: null, sales: null, research: null }, pool: [],
     marketing: {}, econ: { war: 0, trade: 0, left: 0 }, lastHeadline: "",
@@ -1124,8 +1596,11 @@ function cabinetHtml() {
 /* ================= RENDER ================= */
 function render() {
   if (S && !S.firmName) S.firmName = DEFAULT_FIRM_NAME;
+  if (typeof ensureSalesState === "function") ensureSalesState();
   renderHud(); renderNav(); renderBoard(); renderRivals(); renderMap(); renderSectorDetail(); renderMarket();
   renderDesigner(); renderBlueprints(); renderYards(); renderStock(); renderContracts(); renderNews();
+  if (typeof renderSalesTop === "function") renderSalesTop();
+  if (typeof renderBuyerOffers === "function") renderBuyerOffers();
   renderPersonnel(); renderResearch(); renderLoan();
 }
 var VIEWS = [
@@ -1136,7 +1611,7 @@ function renderNav() {
   var counts = {
     board: "", design: ' <span class="cnt">' + S.blueprints.length + ' designs</span>',
     factory: ' <span class="cnt">' + S.yards.length + ' yard' + (S.yards.length === 1 ? "" : "s") + '</span>',
-    sales: ' <span class="cnt">' + S.stock.length + ' in stock · ' + (S.offers.length + S.active.length) + ' contracts</span>',
+    sales: ' <span class="cnt">' + S.stock.length + ' in stock · ' + (S.buyerOffers ? S.buyerOffers.length : 0) + ' haggling · ' + (S.offers.length + S.active.length) + ' contracts</span>',
     personnel: ' <span class="cnt">' + Object.keys(ROLES).filter(function (r) { return S.managers[r]; }).length + '/4 staffed</span>',
     research: ' <span class="cnt">' + Math.floor(S.rp) + ' RP</span>'
   };
@@ -1156,6 +1631,7 @@ function renderHud() {
   $("hud").innerHTML =
     '<span class="brand">Hull &amp; Havoc</span>' +
     '<span class="ver-badge" title="Game version">' + fmtVer(GAME_VERSION) + '</span>' +
+    '<button class="hud-restart" id="btnWhatsNew" title="Read what the latest updates added" style="border-color:var(--teal);color:var(--teal)">✦ What\'s New</button>' +
     '<span class="res"><small>Firm</small> ' + esc(firmName()) + '</span>' +
     '<span class="week">Week ' + d.wk + ' · ' + d.year + '</span>' +
     '<span class="res' + (S.credits < 0 ? " neg" : "") + '"><small>Credits</small> ' + fmt(S.credits) + '</span>' +
@@ -1167,6 +1643,7 @@ function renderHud() {
     '<button class="hud-restart" id="btnRestartHud" title="Discard this company and start a fresh one">↻ Restart — New Company</button>' +
     '<button class="endweek" id="btnEndWeek">End Week ▸</button>';
   $("btnEndWeek").onclick = endWeek;
+  var wn = $("btnWhatsNew"); if (wn) wn.onclick = function () { $("whatsNewBackdrop").classList.add("open"); };
   $("btnRestartHud").onclick = openRestartConfirm;
 }
 function renderBoard() {
@@ -1297,6 +1774,45 @@ function renderMap() {
 function demandRow(label, val, color) {
   return '<dt>' + label + '</dt><dd class="demandcell"><span class="demandbar"><i style="width:' + clamp(val / 1.3, 0, 100) + '%;background:' + color + '"></i></span><span class="dval">' + val + '</span></dd>';
 }
+function adChannelHtml(sec) {
+  ensureSalesState();
+  function has(ch) { return S.adCampaigns.some(function (c) { return c.channel === ch && c.sector === sec.id && c.weeksLeft > 0; }); }
+  var lift = adLift(sec.id);
+  var out = "";
+  if (has("radio")) { var rc = S.adCampaigns.filter(function (c) { return c.channel === "radio" && c.sector === sec.id; })[0]; out += '<span class="pill free">📻 Subspace Radio running — ' + rc.weeksLeft + ' wk left · ' + fmt(rc.costPerWeek) + '/wk · traffic +12%</span> '; }
+  else out += '<button class="btn mini" data-ad="radio:' + sec.id + '">📻 Start Subspace Radio — ' + fmt(40) + '/wk · 4 wk run · traffic +12%</button> ';
+  if (has("holo")) { var hc = S.adCampaigns.filter(function (c) { return c.channel === "holo" && c.sector === sec.id; })[0]; out += '<span class="pill free">📺 Holovision running — ' + hc.weeksLeft + ' wk left · ' + fmt(hc.costPerWeek) + '/wk · traffic +30%</span>';
+  }
+  else out += '<button class="btn mini" data-ad="holo:' + sec.id + '">📺 Start Holovision — ' + fmt(160) + '/wk · 4 wk run · traffic +30%</button>';
+  out += '<div class="small muted" style="margin-top:4px">Channels stack with the weekly budget above' + (lift.traffic ? ' — this sector currently gets +' + Math.round(lift.traffic * 100) + '% traffic from channels' + (sponsorCampaign() ? ' (incl. the firm-wide sponsor)' : '') : '') + '. Fees are charged weekly and itemised as advertising in the Weekly Report. The celebrity sponsor is signed from the top of this Sales screen.</div>';
+  return out;
+}
+function markdownHtml(sec) {
+  ensureSalesState();
+  var m = markdownOf(sec.id);
+  if (m) return '<span class="pill bundle">🏷 MARKDOWN SALE RUNNING — ' + m.pct + '% off all asking prices here · ' + m.weeksLeft + ' wk left · traffic +45%</span><div class="small muted" style="margin-top:4px">Stock cards and margins in this sector already show the marked-down price against build cost.</div>';
+  var cd = S.markdownCooldown[sec.id] || 0;
+  if (cd > S.turn) return '<span class="muted small">Cooling down — another markdown sale here from ' + dateLabel(cd) + ' (' + (cd - S.turn) + ' wk).</span>';
+  return '<select id="mdPct" style="width:auto"><option value="10">10% off</option><option value="20">20% off</option></select> <button class="btn mini primary" id="btnMarkdown">🏷 Start Markdown Sale — 2 weeks · traffic +45%</button><div class="small muted" style="margin-top:4px">Every asking price in ' + esc(sec.name) + ' drops by the chosen % for 2 weeks (margins update to match), then the sector cools down for 6 weeks.</div>';
+}
+function startAdChannel(channel, sectorId) {
+  ensureSalesState();
+  if (S.adCampaigns.some(function (c) { return c.channel === channel && c.sector === sectorId && c.weeksLeft > 0; })) return;
+  var cost = channel === "radio" ? 40 : 160;
+  S.adCampaigns.push({ id: uid(), channel: channel, sector: sectorId, weeksLeft: 4, costPerWeek: cost });
+  logNews((channel === "radio" ? "Subspace Radio spots for " + firmName() + " begin broadcasting in " : "Holovision spots for " + firmName() + " light up the screens in ") + sectorById(sectorId).name + " — " + fmt(cost) + "/wk for 4 weeks, buyer traffic up.");
+  flash((channel === "radio" ? "Subspace Radio" : "Holovision") + " live in " + sectorById(sectorId).name + " — " + fmt(cost) + "/wk for 4 weeks, charged weekly with advertising.");
+  render();
+}
+function startMarkdown(sectorId) {
+  ensureSalesState();
+  if (markdownOf(sectorId)) return;
+  var sel = $("mdPct"); var pct = sel ? Number(sel.value) : 10; if (pct !== 10 && pct !== 20) pct = 10;
+  S.markdowns[sectorId] = { pct: pct, weeksLeft: 2 };
+  logNews("MARKDOWN SALE in " + sectorById(sectorId).name + ": " + firmName() + " cuts every asking price there by " + pct + "% for two weeks — and the queues notice.");
+  flash("Markdown Sale live in " + sectorById(sectorId).name + " — " + pct + "% off every floor price there for 2 weeks. Stock cards now show the marked-down margin truth.");
+  render();
+}
 function renderSectorDetail() {
   var sec = sectorById(ui.sector);
   var dem = demandOf(sec);
@@ -1329,7 +1845,9 @@ function renderSectorDetail() {
     '<dt>Advertising</dt><dd><select id="mktSel" style="width:auto">' +
       [0, 50, 125, 250].map(function (v) { return '<option value="' + v + '"' + (mkt === v ? " selected" : "") + '>' + (v === 0 ? "No advertising" : fmt(v) + " / week") + '</option>'; }).join("") +
       '</select> <span class="muted small">Ads pull extra buyers into this sector\'s showrooms.</span></dd>' +
-    '</dl><div class="btnrow">';
+    '<dt>Ad channels</dt><dd>' + adChannelHtml(sec) + '</dd>' +
+    '<dt>Markdown sale</dt><dd>' + markdownHtml(sec) + '</dd>' +
+    '</dl>' + (priceWarAt(sec.id) ? '<div class="pricewar-banner">⚠ PRICE WAR — ' + esc(priceWarAt(sec.id).rival) + ' is ' + priceWarAt(sec.id).pct + '% under the market here for ' + priceWarAt(sec.id).weeksLeft + ' more week(s). Buyers lean to the rival unless you cut floor prices or advertise.</div>' : '') + '<div class="btnrow">';
   if (!hasYard) html += '<button class="btn primary" id="btnBuildYard" ' + (S.credits < 6000 ? "disabled" : "") + '>Build shipyard — ' + fmt(6000) + '</button>';
   else html += '<span class="pill free">Shipyard operational</span>';
   if (!S.hubs[sec.id]) html += '<button class="btn" id="btnBuildHub" ' + (S.credits < 2500 ? "disabled" : "") + '>Open dealership — ' + fmt(2500) + '</button>';
@@ -1339,6 +1857,8 @@ function renderSectorDetail() {
   var by = $("btnBuildYard"); if (by) by.onclick = function () { buildYard(sec.id); };
   var bh = $("btnBuildHub"); if (bh) bh.onclick = function () { buildHub(sec.id); };
   $("mktSel").onchange = function () { S.marketing[sec.id] = Number(this.value); flash("Advertising in " + sec.name + " set to " + fmt(S.marketing[sec.id]) + " per week."); renderHud(); };
+  Array.prototype.forEach.call($("sectorDetail").querySelectorAll("[data-ad]"), function (b) { b.onclick = function () { var p = b.getAttribute("data-ad").split(":"); startAdChannel(p[0], p[1]); }; });
+  var bm = $("btnMarkdown"); if (bm) bm.onclick = function () { startMarkdown(sec.id); };
 }
 function renderMarket() {
   $("market").innerHTML =
@@ -1595,21 +2115,55 @@ function renderYards() {
   });
 }
 /* ================= STOCK & TRANSIT ================= */
+function setShipPrice(shipId, raw) {
+  var sh = S.stock.filter(function (x) { return x.id === shipId; })[0]; if (!sh) return;
+  var p = Math.round(Number(raw));
+  if (!p || p < 100) { flash("A price has to be at least ₡100 — the ship stays at " + fmt(shipAsk(sh)) + ".", true); render(); return; }
+  sh.price = p;
+  var cost = shipBuildCost(sh);
+  flash(designLabel(sh.design) + " repriced on the floor at " + sectorById(sh.sector).name + ": now " + fmt(floorAsk(sh)) + (markdownOf(sh.sector) ? " after the markdown" : "") + " — margin at that price " + fmt(floorAsk(sh) - cost) + " over its " + fmt(cost) + " build cost. Dealerships, brokers and haggling buyers use the new price from now.");
+  render();
+}
+function setModelPrice(label, raw) {
+  var p = Math.round(Number(raw));
+  if (!p || p < 100) { flash("A model price has to be at least ₡100.", true); return; }
+  var n = 0;
+  S.stock.forEach(function (sh) { if (designLabel(sh.design) === label) { sh.price = p; n++; } });
+  flash(n + " × " + label + " repriced to " + fmt(p) + " each, everywhere on the floor.");
+  render();
+}
 function renderStock() {
   var html = "";
   if (!S.stock.length) html += '<div class="empty">No finished ships in stock. Lay a keel in Assembly.</div>';
+  if (S.stock.length) {
+    var groups = {};
+    S.stock.forEach(function (sh) { var k = designLabel(sh.design); groups[k] = groups[k] || { n: 0, cost: shipBuildCost(sh) }; groups[k].n++; });
+    html += '<div class="floorbar"><strong style="font-family:Orbitron,sans-serif;font-size:12.5px;letter-spacing:.06em">FLOOR PRICING — SET A WHOLE MODEL LINE</strong>' +
+      Object.keys(groups).map(function (k) {
+        return '<div class="fb-row"><span><strong>' + esc(k) + '</strong> <span class="muted small">× ' + groups[k].n + ' on the floor · build cost ' + fmt(groups[k].cost) + ' each</span></span>' +
+          '<input type="number" min="100" step="10" data-model-input="' + esc(k) + '" aria-label="Price for all ' + esc(k) + '" placeholder="₡ each" />' +
+          '<button class="btn mini" data-model-set="' + esc(k) + '">Set all ' + groups[k].n + ' to this price</button></div>';
+      }).join("") + '<div class="small muted" style="margin-top:4px">Or reprice any single ship on its own card below — instantly, at any time. Every card shows build cost and margin; a sector markdown, when running, is already reflected in the asking figure.</div></div>';
+  }
   S.stock.forEach(function (sh) {
     var sec = sectorById(sh.sector);
     var st = designStats(sh.design);
-    var ask = Math.round(askingPrice(sh.design) * (sh.quality || 1));
+    var ask = floorAsk(sh);
     var destOpts = SECTOR_DEFS.filter(function (d) { return d.id !== sh.sector; }).map(function (d) {
       var ds = S.sectors[d.id];
       var sel = ui.shipDest[sh.id] === d.id ? " selected" : "";
       return '<option value="' + d.id + '"' + sel + '>' + esc(ds.name) + ' — ' + transitWeeks(sec, ds) + ' wk · risk ' + riskAt(ds) + '%</option>';
     }).join("");
     html += '<div class="shipitem"><div class="row"><span style="width:118px;flex:0 0 118px">' + shipSvg(sh.design, "118") + '</span>' +
-      '<span><strong>' + esc(sh.design.name) + '</strong> <span class="ver-chip">' + fmtVer(sh.design.ver) + '</span><br>' +
-      '<span class="pill">' + st.sizeName + ' ' + st.role + '</span> <span class="muted">at ' + esc(sec.name) + (S.hubs[sh.sector] ? ' · in showroom' : ' · no dealership here') + '<br>Asking ' + fmt(ask) + ' · quality ' + Math.round((sh.quality || 1) * 100) + '% · appeal ' + appealOf(sh.design) + '</span></span></div>' +
+      '<span><strong>' + esc(sh.design.name) + '</strong> <span class="ver-chip">' + fmtVer(sh.design.ver) + '</span>' + (sh.tradeIn ? ' <span class="pill tradein">TRADE-IN</span>' : '') + (markdownOf(sh.sector) ? ' <span class="pill bundle">🏷 MARKDOWN ' + markdownOf(sh.sector).pct + '% OFF</span>' : '') + (priceWarAt(sh.sector) ? ' <span class="pill war">PRICE WAR HERE</span>' : '') + '<br>' +
+      '<span class="pill">' + st.sizeName + ' ' + st.role + '</span> <span class="muted">at ' + esc(sec.name) + (S.hubs[sh.sector] ? ' · in showroom' : ' · no dealership here') + ' · quality ' + Math.round((sh.quality || 1) * 100) + '% · appeal ' + appealOf(sh.design) + '</span></span></div>' +
+      costStripHtml(sh) +
+      '<div class="price-editor"><label for="price-' + sh.id + '">Floor price ₡</label><input type="number" id="price-' + sh.id + '" data-price-input="' + sh.id + '" min="100" step="10" value="' + shipAsk(sh) + '" />' +
+      '<button class="btn mini primary" data-price-set="' + sh.id + '">Set price</button>' +
+      '<button class="btn mini" data-price-quick="' + sh.id + ':-10">−10%</button><button class="btn mini" data-price-quick="' + sh.id + ':10">+10%</button>' +
+      '<button class="btn mini" data-price-quick="' + sh.id + ':market">At market (' + fmt(st.value) + ')</button>' +
+      (sh.price != null ? '<button class="btn mini" data-price-reset="' + sh.id + '">Reset to blueprint</button>' : '') +
+      '<span class="muted small">Changing it is instant — no re-save, no new version.</span></div>' +
       '<div class="row" style="margin-top:6px"><select data-dest="' + sh.id + '" aria-label="Destination">' + destOpts + '</select>' +
       '<button class="btn mini" data-broker="' + sh.id + '">Sell to broker — ' + fmt(Math.round(ask * 0.85)) + '</button>' +
       '<button class="btn primary mini" data-launch="' + sh.id + '">Ship it ▸</button></div>' + refitRowHtml(sh) + '</div>';
@@ -1622,6 +2176,10 @@ function renderStock() {
       '<span class="muted">→ ' + esc(sectorById(t.dest).name) + ' · arrives in ' + t.left + ' wk · ' + (t.contractId ? '<span class="pill free">CONTRACT — ' + fmt(t.expected) + '</span>' : 'will stock the showroom at asking ' + fmt(t.expected)) + '</span></div></div>';
   });
   $("transit").innerHTML = thtml;
+  Array.prototype.forEach.call($("stock").querySelectorAll("[data-price-set]"), function (b) { b.onclick = function () { var id = Number(b.getAttribute("data-price-set")); var inp = document.querySelector('[data-price-input="' + id + '"]'); setShipPrice(id, inp ? inp.value : null); }; });
+  Array.prototype.forEach.call($("stock").querySelectorAll("[data-price-quick]"), function (b) { b.onclick = function () { var p = b.getAttribute("data-price-quick").split(":"); var sh = S.stock.filter(function (x) { return x.id === Number(p[0]); })[0]; if (!sh) return; if (p[1] === "market") setShipPrice(sh.id, designStats(sh.design).value); else setShipPrice(sh.id, Math.round(shipAsk(sh) * (1 + Number(p[1]) / 100) / 10) * 10); }; });
+  Array.prototype.forEach.call($("stock").querySelectorAll("[data-price-reset]"), function (b) { b.onclick = function () { var sh = S.stock.filter(function (x) { return x.id === Number(b.getAttribute("data-price-reset")); })[0]; if (sh) { sh.price = null; flash(designLabel(sh.design) + " is back to its blueprint asking price: " + fmt(floorAsk(sh)) + "."); render(); } }; });
+  Array.prototype.forEach.call($("stock").querySelectorAll("[data-model-set]"), function (b) { b.onclick = function () { var k = b.getAttribute("data-model-set"); var inp = document.querySelector('[data-model-input="' + k + '"]'); setModelPrice(k, inp ? inp.value : null); }; });
   Array.prototype.forEach.call($("stock").querySelectorAll("[data-dest]"), function (sel) { sel.onchange = function () { ui.shipDest[Number(sel.getAttribute("data-dest"))] = sel.value; }; });
   Array.prototype.forEach.call($("stock").querySelectorAll("[data-launch]"), function (b) { b.onclick = function () { launchShip(Number(b.getAttribute("data-launch"))); }; });
   Array.prototype.forEach.call($("stock").querySelectorAll("[data-broker]"), function (b) { b.onclick = function () { sellBroker(Number(b.getAttribute("data-broker"))); }; });
@@ -1825,7 +2383,7 @@ function sellBroker(shipId) {
   var idx = S.stock.findIndex(function (x) { return x.id === shipId; });
   if (idx < 0) return;
   var sh = S.stock.splice(idx, 1)[0];
-  var price = Math.round(askingPrice(sh.design) * (sh.quality || 1) * 0.85);
+  var price = Math.round(floorAsk(sh) * 0.85);
   S.credits += price;
   logNews("Broker sale: " + designLabel(sh.design) + " moved at a discount in " + sectorById(sh.sector).name + " for " + fmt(price) + ".");
   flash("Broker took " + designLabel(sh.design) + " for " + fmt(price) + " (85% of asking). The showroom would have done better — eventually.");
@@ -1844,8 +2402,8 @@ function launchShip(shipId) {
   for (var i = 0; i < S.active.length; i++) {
     if (S.active[i].sector === destId && matchesContract(sh.design, S.active[i])) { contract = S.active[i]; break; }
   }
-  var expected = contract ? contract.perShip : Math.round(askingPrice(sh.design) * (sh.quality || 1));
-  S.transit.push({ id: uid(), design: sh.design, quality: sh.quality || 1, dest: destId, left: transitWeeks(from, to), expected: expected, contractId: contract ? contract.id : null });
+  var expected = contract ? contract.perShip : floorAsk(sh);
+  S.transit.push({ id: uid(), design: sh.design, quality: sh.quality || 1, price: sh.price != null ? sh.price : null, dest: destId, left: transitWeeks(from, to), expected: expected, contractId: contract ? contract.id : null });
   flash(designLabel(sh.design) + " launched toward " + to.name + " — " + transitWeeks(from, to) + " wk out" + (contract ? ", bound for the " + contract.buyer + " contract" : ", to stock the showroom there") + ".");
   render();
 }
@@ -2073,7 +2631,7 @@ function endWeek() {
         return;
       }
     }
-    S.stock.push({ id: uid(), design: t.design, sector: t.dest, quality: t.quality || 1 });
+    S.stock.push({ id: uid(), design: t.design, sector: t.dest, quality: t.quality || 1, price: t.price != null ? t.price : null });
     report.lines.push("Arrived: " + designLabel(t.design) + " stocked at " + dest.name + (S.hubs[t.dest] ? " — the showroom takes it from here." : " — no dealership there, so only brokers will call."));
   });
   S.transit = stillFlying;
@@ -2087,7 +2645,7 @@ function endWeek() {
     ["Warship", "Freighter"].forEach(function (role) {
       var pool = (role === "Warship" ? dem.war : dem.trade) / 150;
       pool *= S.hubs[sec.id] ? 1 : 0.3;
-      pool *= 1 + (S.marketing[sec.id] || 0) / 500;
+      pool *= 1 + (S.marketing[sec.id] || 0) / 500 + adLift(sec.id).traffic + (markdownOf(sec.id) ? 0.45 : 0);
       pool *= 1 + mgrSkill("sales") * 0.04;
       if (S.tech.dealernet) pool *= 1.15;
       var buyers = Math.min(5, Math.floor(pool) + (Math.random() < (pool % 1) ? 1 : 0));
@@ -2097,10 +2655,12 @@ function endWeek() {
         var sh = candidates[0];
         var st = designStats(sh.design);
         var relS = relOf(sec.id);
-        var accept = clamp(1.25 - askingPrice(sh.design) / st.value + (appealOf(sh.design) - 100) / 200 + ((sh.quality || 1) - 1) + (S.rep - 50) / 500 + (relS.score - 50) / 400 + (tasteMatches(relS, sh) ? 0.06 : 0) + (relS.taste === "cheap" && askingPrice(sh.design) > st.value * 1.1 ? -0.1 : 0), 0.08, 0.97);
-        if (S.longQuietUntil && S.turn < S.longQuietUntil && askingPrice(sh.design) > st.value * 0.95) accept *= 0.25;
+        var accept = clamp(1.25 - floorAsk(sh) / st.value + (appealOf(sh.design) - 100) / 200 + ((sh.quality || 1) - 1) + (S.rep - 50) / 500 + (relS.score - 50) / 400 + (tasteMatches(relS, sh) ? 0.06 : 0) + (relS.taste === "cheap" && floorAsk(sh) > st.value * 1.1 ? -0.1 : 0) + adLift(sec.id).accept, 0.08, 0.97);
+        var pwSales = priceWarAt(sec.id);
+        if (pwSales) { var warAnswered = floorAsk(sh) <= st.value * 0.9 || (S.marketing[sec.id] || 0) >= 250 || adLift(sec.id).traffic >= 0.3; var warBlunted = floorAsk(sh) <= st.value || (S.marketing[sec.id] || 0) >= 125; accept *= warAnswered ? 0.97 : warBlunted ? 0.82 : 0.6; }
+        if (S.longQuietUntil && S.turn < S.longQuietUntil && floorAsk(sh) > st.value * 0.95) accept *= 0.25;
         if (Math.random() < accept) {
-          var price = Math.round(askingPrice(sh.design) * (sh.quality || 1));
+          var price = floorAsk(sh);
           S.credits += price; report.revenue += price; report.units += 1; soldHere += 1; revHere += price;
           var key = designLabel(sh.design);
           if (!report.salesByModel[key]) report.salesByModel[key] = { units: 0, revenue: 0 };
@@ -2109,13 +2669,17 @@ function endWeek() {
           S.stock = S.stock.filter(function (x) { return x.id !== sh.id; });
           candidates.shift();
         } else {
-          report.misses.push({ model: designLabel(sh.design), sector: sec.name, ask: askingPrice(sh.design), value: st.value, tasteMatch: tasteMatches(relS, sh), rel: Math.round(relS.score) });
+          report.misses.push({ model: designLabel(sh.design), sector: sec.name, ask: floorAsk(sh), value: st.value, tasteMatch: tasteMatches(relS, sh), rel: Math.round(relS.score) });
           candidates.shift();
         }
       }
     });
     if (soldHere) report.lines.push(sec.name + (S.hubs[sec.id] ? " dealership" : " brokers") + " sold " + soldHere + " ship" + (soldHere > 1 ? "s" : "") + " for " + fmt(revHere) + ".");
   });
+
+  /* v1.202 sales events tick: price wars, ad campaigns, markdowns, offer expiry — then fresh hagglers for unsold stock */
+  tickSalesEvents(report);
+  maybeSpawnBuyerOffers();
 
   /* Rivals report */
   var rivalRevTotal = 0;
@@ -2147,6 +2711,7 @@ function endWeek() {
   if (S.staff && S.staff.engineer) report.expStaff += S.staff.engineer.salary;
   S.yards.forEach(function (y) { if (y.foreman) report.expStaff += y.foreman.salary; });
   Object.values(S.marketing).forEach(function (v) { report.expMkt += v; });
+  if (S.adCostThisWeek) { report.expMkt += S.adCostThisWeek; if (S.adCostThisWeek > 0) report.lines.push("Advertising channels (Subspace Radio / Holovision weekly fees): " + fmt(S.adCostThisWeek) + " — itemised here; the celebrity sponsorship was prepaid at signing."); S.adCostThisWeek = 0; }
   report.expRes = S.resBudget;
   var licN = Object.keys(S.patents).length;
   if (licN) { report.licensing = licN * 9; S.credits += report.licensing; report.otherIncome += report.licensing; report.lines.push("Patent licensing: your " + licN + " patented advance" + (licN > 1 ? "s earn" : " earns") + " +" + fmt(report.licensing) + " from rival yards building under licence."); }
@@ -2298,7 +2863,7 @@ function showReport(report, share, rivalRevTotal, nw, rpGain) {
 }
 /* ================= RESTART & RENAME (v1.201) ================= */
 function startNewCompany(fromAshes) {
-  ["overBackdrop", "restartBackdrop", "renameBackdrop", "ledgerBackdrop", "charterBackdrop", "decisionBackdrop"].forEach(function (id) { var el = $(id); if (el) el.classList.remove("open"); });
+  ["overBackdrop", "restartBackdrop", "renameBackdrop", "ledgerBackdrop", "charterBackdrop", "decisionBackdrop", "whatsNewBackdrop"].forEach(function (id) { var el = $(id); if (el) el.classList.remove("open"); });
   newGame();
   ui.sector = "corvane"; ui.shipDest = {}; ui.test = null; ui.view = "board"; ui.refit = {};
   ui.design = { size: "corvette", hull: "wedge", engine: "standard", weapon: "laser", name: "", ver: GAME_VERSION, price: null, appeal: null };
@@ -2369,6 +2934,8 @@ function wireDesigner() {
   };
   $("btnCharterContinue").onclick = function () { $("charterBackdrop").classList.remove("open"); };
   $("btnRestart").onclick = function () { startNewCompany(true); };
+  $("btnWhatsNewClose").onclick = function () { $("whatsNewBackdrop").classList.remove("open"); };
+  $("whatsNewBackdrop").onclick = function (ev) { if (ev.target === this) this.classList.remove("open"); };
   $("btnRestartCancel").onclick = function () { $("restartBackdrop").classList.remove("open"); };
   $("btnRestartConfirm").onclick = function () { startNewCompany(false); };
   $("btnRenameCancel").onclick = function () { $("renameBackdrop").classList.remove("open"); };
@@ -2626,6 +3193,16 @@ function doRefit(shipId) {
       });
     }
     if (!s.goalsClaimed || typeof s.goalsClaimed !== 'object') s.goalsClaimed = {};
+    /* v1.202 sales-floor fields (the game also lazily defaults these itself
+       in ensureSalesState(); mirrored here so a restored save is whole
+       before the first render): haggle offers, rival price wars, repeat
+       buyers, ad campaigns, and per-sector markdowns + cooldowns. */
+    if (!Array.isArray(s.buyerOffers)) s.buyerOffers = [];
+    if (!Array.isArray(s.priceWars)) s.priceWars = [];
+    if (!Array.isArray(s.knownBuyers)) s.knownBuyers = [];
+    if (!Array.isArray(s.adCampaigns)) s.adCampaigns = [];
+    if (!s.markdowns || typeof s.markdowns !== 'object') s.markdowns = {};
+    if (!s.markdownCooldown || typeof s.markdownCooldown !== 'object') s.markdownCooldown = {};
     if (typeof s.contractsCompleted !== 'number') s.contractsCompleted = 0;
     if (typeof s.longQuietNet !== 'number') s.longQuietNet = 0;
     if (typeof s.longQuietDone !== 'boolean') s.longQuietDone = false;

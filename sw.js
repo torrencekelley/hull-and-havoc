@@ -1,5 +1,5 @@
 // Hull & Havoc service worker — bump HH_CACHE on every release so phones pick up the new build.
-var HH_CACHE = 'hull-and-havoc-v6';
+var HH_CACHE = 'hull-and-havoc-v7';
 var HH_FILES = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
 self.addEventListener('install', function(e){
   e.waitUntil(caches.open(HH_CACHE).then(function(c){ return c.addAll(HH_FILES); }).then(function(){ return self.skipWaiting(); }));
