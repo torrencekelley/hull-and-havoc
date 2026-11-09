@@ -260,6 +260,11 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>
+  /* iPhone safe-area fix (build_phone.py transformation 3; see docstring). */
+  body { padding-top: env(safe-area-inset-top); }
+  .hud { padding-top: calc(10px + env(safe-area-inset-top)); }
+</style>
 </head>
   <body>
     <div class="hud" id="hud"></div>
